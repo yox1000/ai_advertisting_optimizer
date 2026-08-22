@@ -31,6 +31,17 @@ const server = createServer(async (req, res) => {
   }
 });
 
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(`Port ${port} is already in use.`);
+    console.error(`If the setup page is already running, open http://localhost:${port}/setup.html`);
+    console.error(`Otherwise run it on another port: PORT=${port + 1} npm run setup`);
+    process.exit(1);
+  }
+
+  throw error;
+});
+
 server.listen(port, "127.0.0.1", () => {
   console.log(`Setup page: http://localhost:${port}/setup.html`);
 });
