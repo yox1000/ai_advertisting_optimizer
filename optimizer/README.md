@@ -1,12 +1,24 @@
-# Midtown AI Recommendation Optimizer
+# AI Recommendation Optimizer
 
-This harness evaluates whether Midtown Loft & Terrace content is easy for AI systems to understand and recommend.
+This harness evaluates whether a company's website content is easy for AI systems to understand and recommend. Midtown Loft & Terrace is the current example configuration, not a hardcoded requirement.
 
 It separates three test modes:
 
 - `no-context`: asks prompts without supplying the local website content. This is a baseline tracking signal; local edits should not be expected to change it immediately.
-- `competitor-bundle`: compares Midtown content against neutral competitor profiles. This is the main local optimization signal because it avoids directly telling the model to favor Midtown.
-- `midtown-only`: supplies only Midtown content. This is useful for content clarity, but it is biased and should not be treated as public recommendation lift.
+- `competitor-bundle`: compares the target company content against neutral competitor profiles. This is the main local optimization signal because it avoids directly telling the model to favor the target company.
+- `target-only`: supplies only the target company's content. This is useful for content clarity, but it is biased and should not be treated as public recommendation lift.
+
+## Configure A Client
+
+To adapt the harness to another company:
+
+- Put the company's static page in `index.html`.
+- Add `data-ai-key` attributes to editable text blocks.
+- Update `facts.json` with `entity`, `aliases`, `industry`, `market`, protected facts, blocked claims, and `editStrategy`.
+- Update `prompt-suite.json` with the prompts the company wants to win.
+- Update `competitors.json` with neutral competitor profiles. New configs can use a `companies` array; the Midtown example still uses the older `venues` key for compatibility.
+
+See `optimizer/example-facts.generic.json` for a generic facts template.
 
 ## Commands
 
@@ -70,6 +82,6 @@ OpenAI uses the Responses API. DeepSeek uses its OpenAI-compatible chat completi
 ## Guardrails
 
 - Edits only target non-protected `data-ai-key` blocks.
-- Protected facts include address, contact info, venue sizes, and capacities.
+- Protected facts are configured in `facts.json`; for the Midtown example they include address, contact info, venue sizes, and capacities.
 - Candidate validation rejects unsupported claims, blocked superlatives, and missing protected facts.
-- No-context scores are reported separately from competitor-bundle and Midtown-only scores.
+- No-context scores are reported separately from competitor-bundle and target-only clarity scores.

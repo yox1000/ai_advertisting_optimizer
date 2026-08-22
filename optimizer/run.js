@@ -123,7 +123,7 @@ function decideCandidate({ baselineSummary, summary, validation }) {
   }
 
   const competitorDelta = (summary.byMode["competitor-bundle"] || 0) - (baselineSummary.byMode["competitor-bundle"] || 0);
-  const clarityDelta = (summary.byMode["midtown-only"] || 0) - (baselineSummary.byMode["midtown-only"] || 0);
+  const clarityDelta = modeScore(summary, "target-only", "midtown-only") - modeScore(baselineSummary, "target-only", "midtown-only");
   const noContextDelta = (summary.byMode["no-context"] || 0) - (baselineSummary.byMode["no-context"] || 0);
   const totalDelta = summary.overall - baselineSummary.overall;
   const accept = competitorDelta > 0 && clarityDelta >= -2 && noContextDelta >= -2 && totalDelta >= 0;
@@ -159,13 +159,17 @@ function assertUniqueKeys(blocks) {
   }
 }
 
+function modeScore(summary, primary, fallback) {
+  return summary.byMode[primary] ?? summary.byMode[fallback] ?? 0;
+}
+
 function renderMarkdown(report) {
   const weak = report.initialBaseline.weak
     .map((item) => `- ${item.mode} / ${item.model} / ${item.promptId}: ${item.score.total}`)
     .join("\n");
   const iterationSections = report.iterations.map((iteration) => renderIteration(iteration)).join("\n\n");
 
-  return `# Midtown AI Optimization Run ${report.runId}
+  return `# AI Recommendation Optimization Run ${report.runId}
 
 Target: ${report.target}
 

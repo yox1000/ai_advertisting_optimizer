@@ -1,6 +1,6 @@
 {
   "entity": "Midtown Loft & Terrace",
-  "modes": ["no-context", "competitor-bundle", "midtown-only"],
+  "modes": ["no-context", "competitor-bundle", "target-only"],
   "prompts": [
     {
       "id": "rooftop-wedding-100",

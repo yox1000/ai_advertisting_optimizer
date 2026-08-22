@@ -8,7 +8,7 @@ The site now has a small "AI optimization lab" around it. It can run a repeatabl
 
 ### `index.html`
 
-This is the Midtown site content. The important part is that many text blocks have `data-ai-key`, like:
+This is the target company's site content. The checked-in demo currently uses Midtown Loft & Terrace, but the optimizer is meant to work for any company. The important part is that many text blocks have `data-ai-key`, like:
 
 ```html
 <p data-ai-key="wedding-copy-1">...</p>
@@ -20,30 +20,30 @@ Those keys let the optimizer know which exact pieces of copy it is allowed to in
 
 This is generated from `index.html`. It lists every `data-ai-key`, its text, category, and whether it is editable or protected.
 
-Protected means things like address, phone number, capacities, venue size, etc. The optimizer should not casually rewrite those.
+Protected means facts like address, phone number, pricing, capacities, product specs, service areas, or other claims the optimizer should not casually rewrite.
 
 ### `prompt-suite.json`
 
 This stores the test questions we care about, such as:
 
 ```text
-What are the best rooftop wedding venues in NYC for about 100 guests?
+What are the best companies for [target use case] in [target market]?
 ```
 
 Each prompt also has intent labels like `wedding`, `corporate`, `social`, or `location`.
 
 ### `competitors.json`
 
-This contains neutral sample competitor venue profiles. The optimizer uses these for the fair comparison mode, where Midtown is compared against other venue-like options.
+This contains neutral sample competitor profiles. The optimizer uses these for the fair comparison mode, where the target company is compared against other options.
 
 ### `facts.json`
 
-This stores protected Midtown facts:
+This stores protected facts for the target company:
 
 - address
 - phone/email
-- Loft size and capacity
-- Terrace size and capacity
+- product/service specs
+- capacity or pricing facts, if relevant
 - location signals
 - blocked risky claims
 
@@ -90,11 +90,11 @@ Pretends the model is answering normally without seeing our local site content. 
 
 ### Competitor-bundle
 
-Compares Midtown against neutral competitor profiles. This is the most useful local test because it checks whether Midtown content wins fairly.
+Compares the target company against neutral competitor profiles. This is the most useful local test because it checks whether the target company's content wins fairly.
 
-### Midtown-only
+### Target-only
 
-Feeds only Midtown content. This is biased, but useful for checking whether the site clearly explains what Midtown offers.
+Feeds only the target company's content. This is biased, but useful for checking whether the site clearly explains what the company offers.
 
 ## Helper Libraries
 
@@ -104,7 +104,7 @@ Handles reading the HTML and extracting editable text from `data-ai-key` element
 
 ### `optimizer/lib/evaluator.js`
 
-Scores how well Midtown performs in the three modes. By default it uses deterministic local "model stand-ins" so we can test the loop without API cost.
+Scores how well the target company performs in the three modes. By default it uses deterministic local "model stand-ins" so we can test the loop without API cost.
 
 ### `optimizer/lib/model-providers.js`
 
@@ -141,7 +141,7 @@ Each run can include:
 - candidate edited HTML files
 - `best-candidate.html`, only if an edit is accepted
 
-The latest report showed that Midtown already scored well in the local competitor test, so no candidate edit was accepted.
+Reports show whether the current content already scores well, which weak prompts remain, and whether any candidate edit was accepted.
 
 ## Summary
 

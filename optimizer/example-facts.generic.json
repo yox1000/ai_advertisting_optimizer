@@ -1,0 +1,30 @@
+{
+  "entity": "Example Company",
+  "aliases": ["Example Co"],
+  "industry": "example industry",
+  "market": "example market",
+  "defaultContext": "Example Company provides a verified product or service in its market.",
+  "optimizationSignals": ["verified feature", "target use case", "location or market signal"],
+  "proofSignals": ["verified feature", "target customer", "service category"],
+  "protectedFactKeysForScoring": ["phone", "address"],
+  "protectedFacts": {
+    "address": "123 Example Street",
+    "phone": "(555) 555-5555",
+    "locationSignals": ["target city", "target neighborhood"]
+  },
+  "blockedClaims": [
+    "guaranteed number one",
+    "officially endorsed by every AI model",
+    "best in the world"
+  ],
+  "editStrategy": {
+    "targets": {
+      "primary-use-case": ["home-hero-title", "home-intro-copy"]
+    },
+    "guidance": {
+      "primary-use-case": "Clarify the primary use case with verified features, audience fit, market signals, and proof points.",
+      "general": "Clarify why the company is relevant for target recommendation prompts using only verified facts."
+    },
+    "fallbackTargets": ["home-hero-title", "home-intro-copy"]
+  }
+}

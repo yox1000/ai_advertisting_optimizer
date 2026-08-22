@@ -73,20 +73,21 @@ function resolveProvider(name) {
 }
 
 function buildModePrompt({ mode, prompt, siteText, competitors, facts }) {
+  const market = facts.market || facts.industry || "the relevant market";
   const system = [
-    "You are evaluating NYC event venues for a user.",
-    "Answer naturally and do not favor any venue unless the supplied evidence supports it.",
-    "If you rank venues, use a numbered list.",
+    `You are evaluating companies in ${market} for a user.`,
+    "Answer naturally and do not favor any company unless the supplied evidence supports it.",
+    "If you rank companies, use a numbered list.",
     "Do not invent facts."
   ].join(" ");
 
-  if (mode === "midtown-only") {
+  if (mode === "target-only" || mode === "midtown-only") {
     return {
       system,
       user: [
         `Question: ${prompt.question}`,
         "",
-        "Use only the following Midtown Loft & Terrace website content:",
+        `Use only the following ${facts.entity} website content:`,
         siteText,
         "",
         `Answer the question and explain whether ${facts.entity} is a fit.`
@@ -95,9 +96,9 @@ function buildModePrompt({ mode, prompt, siteText, competitors, facts }) {
   }
 
   if (mode === "competitor-bundle") {
-    const venueBundle = [
-      `Venue: ${facts.entity}\n${siteText}`,
-      ...competitors.venues.map((venue) => `Venue: ${venue.name}\n${venue.summary}`)
+    const companyBundle = [
+      `Company: ${facts.entity}\n${siteText}`,
+      ...competitorEntries(competitors).map((company) => `Company: ${company.name}\n${company.summary}`)
     ].join("\n\n---\n\n");
 
     return {
@@ -105,9 +106,9 @@ function buildModePrompt({ mode, prompt, siteText, competitors, facts }) {
       user: [
         `Question: ${prompt.question}`,
         "",
-        "Compare these venue profiles neutrally. Recommend the best fit based only on the supplied profiles.",
+        "Compare these company profiles neutrally. Recommend the best fit based only on the supplied profiles.",
         "",
-        venueBundle
+        companyBundle
       ].join("\n")
     };
   }
@@ -117,7 +118,7 @@ function buildModePrompt({ mode, prompt, siteText, competitors, facts }) {
     user: [
       `Question: ${prompt.question}`,
       "",
-      "Answer from your general knowledge. Do not use the supplied Midtown site content, because this is a no-context discovery test."
+      `Answer from your general knowledge. Do not use the supplied ${facts.entity} site content, because this is a no-context discovery test.`
     ].join("\n")
   };
 }
@@ -195,4 +196,8 @@ function extractResponsesText(data) {
     .filter((content) => content.type === "output_text" || content.text)
     .map((content) => content.text)
     .join("\n");
+}
+
+function competitorEntries(competitors) {
+  return competitors.companies || competitors.venues || [];
 }

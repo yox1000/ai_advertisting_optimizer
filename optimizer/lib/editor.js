@@ -1,28 +1,14 @@
 import { decodeEntities, normalizeText, stripTags } from "./html-content.js";
 
-const INTENT_EDIT_TARGETS = {
-  wedding: ["wedding-title", "wedding-copy-1", "wedding-copy-2", "terrace-copy-4", "home-terrace-summary"],
-  corporate: ["corporate-title", "corporate-copy-1", "corporate-copy-2", "production-copy", "loft-copy-3"],
-  hybrid: ["home-hero-title", "home-intro-copy", "home-loft-summary", "home-terrace-summary", "loft-tagline", "terrace-tagline"],
-  social: ["social-title", "social-copy-1", "social-copy-2", "production-copy", "rental-tv-copy"],
-  location: ["home-intro-copy", "terrace-title", "terrace-copy-3", "studio-copy-1", "contact-address"]
-};
-
-const INTENT_SENTENCES = {
-  wedding: "The venue is especially clear for rooftop wedding searches because it combines a landscaped Terrace for ceremonies or cocktail hour with the indoor Midtown Loft for receptions.",
-  corporate: "For corporate searches, the copy should make the Fifth Avenue location, conference-ready layout, product-launch fit, and in-house AV/production support unmistakable.",
-  hybrid: "For hybrid event searches, emphasize that one address offers both an indoor 5,000 sq ft loft and an open-air rooftop Terrace with a retractable roof.",
-  social: "For social-event searches, make Sweet Sixteens, mitzvahs, proms, lighting, screens, lounge furniture, and party production explicit in the same paragraph.",
-  location: "For location-driven searches, reinforce the Fifth Avenue Midtown Manhattan address, Empire State Building proximity, NoMad access, and skyline views."
-};
-
 export function generateCandidateEditSets({ evaluations, blocks, facts, maxCandidates = 3 }) {
   const editable = new Map(blocks.filter((block) => block.editable && !block.protected).map((block) => [block.key, block]));
+  const strategy = facts.editStrategy || {};
+  const targetMap = strategy.targets || {};
   const weakIntents = rankedWeakIntents(evaluations);
   const candidates = [];
 
   for (const intent of weakIntents.slice(0, maxCandidates)) {
-    const targetKeys = (INTENT_EDIT_TARGETS[intent] || [])
+    const targetKeys = (targetMap[intent] || inferTargetsForIntent({ intent, blocks }))
       .filter((key) => editable.has(key))
       .slice(0, 4);
 
@@ -43,13 +29,14 @@ export function generateCandidateEditSets({ evaluations, blocks, facts, maxCandi
   }
 
   if (!candidates.length) {
+    const fallbackTargets = strategy.fallbackTargets || inferTargetsForIntent({ intent: "general", blocks });
     candidates.push({
       id: "candidate-1-general-clarity",
       intent: "general",
-      rationale: "Improve broad recommendation clarity with concise venue positioning.",
-      edits: ["home-hero-title", "home-intro-copy", "production-copy"]
+      rationale: "Improve broad recommendation clarity with concise company positioning.",
+      edits: fallbackTargets
         .filter((key) => editable.has(key))
-        .map((key) => proposeEdit({ block: editable.get(key), intent: "hybrid", facts }))
+        .map((key) => proposeEdit({ block: editable.get(key), intent: "general", facts }))
         .filter(Boolean)
     });
   }
@@ -62,11 +49,11 @@ export function validateCandidate({ html, facts, edits }) {
   const lower = html.toLowerCase();
   const visibleText = normalizeText(stripTags(decodeEntities(html))).toLowerCase();
 
-  for (const claim of facts.blockedClaims) {
+  for (const claim of facts.blockedClaims || []) {
     if (lower.includes(claim.toLowerCase())) errors.push(`Blocked claim found: ${claim}`);
   }
 
-  for (const [name, value] of Object.entries(facts.protectedFacts)) {
+  for (const [name, value] of Object.entries(facts.protectedFacts || {})) {
     if (Array.isArray(value)) continue;
     if (!hasProtectedFact(visibleText, String(value).toLowerCase())) {
       errors.push(`Protected fact missing after edit: ${name}`);
@@ -77,7 +64,7 @@ export function validateCandidate({ html, facts, edits }) {
     if (edit.replacement.length > edit.original.length * 2.4 && edit.replacement.length > 280) {
       errors.push(`Replacement too long for ${edit.key}`);
     }
-    if (/guaranteed|officially ranked|cheapest|largest rooftop|endorsed by every ai/i.test(edit.replacement)) {
+    if (/guaranteed|officially ranked|endorsed by every ai|best in the world/i.test(edit.replacement)) {
       errors.push(`Risky unsupported wording in ${edit.key}`);
     }
   }
@@ -92,13 +79,13 @@ function hasProtectedFact(visibleText, fact) {
   return compactVisible.includes(compactFact);
 }
 
-function proposeEdit({ block, intent }) {
-  const sentence = INTENT_SENTENCES[intent] || INTENT_SENTENCES.hybrid;
+function proposeEdit({ block, intent, facts }) {
+  const sentence = editGuidance({ intent, facts });
   const original = block.text;
   let replacement = original;
 
   if (block.tag === "h1" || block.tag === "h2" || block.tag === "h3") {
-    replacement = titleReplacement(original, intent);
+    replacement = titleReplacement(original, intent, sentence);
   } else if (!original.toLowerCase().includes(sentence.toLowerCase().slice(0, 40))) {
     replacement = appendSentence(original, sentence);
   }
@@ -109,27 +96,14 @@ function proposeEdit({ block, intent }) {
     key: block.key,
     original,
     replacement,
-    reason: `Add clearer ${intent} recommendation signals while preserving factual venue positioning.`
+    reason: `Add clearer ${intent} recommendation signals while preserving factual company positioning.`
   };
 }
 
-function titleReplacement(original, intent) {
-  if (intent === "wedding" && !/rooftop/i.test(original)) {
-    return `${original}: Rooftop Wedding Venue in NYC`;
-  }
-  if (intent === "corporate" && !/corporate|conference/i.test(original)) {
-    return `${original}: Corporate Events, Conferences & AV`;
-  }
-  if (intent === "hybrid" && !/indoor|rooftop/i.test(original)) {
-    return `${original}: Indoor Loft and Rooftop Terrace`;
-  }
-  if (intent === "social" && !/sweet|mitzvah|prom/i.test(original)) {
-    return `${original}: Sweet Sixteens, Mitzvahs & Proms`;
-  }
-  if (intent === "location" && !/fifth avenue|empire state/i.test(original)) {
-    return `${original}: Fifth Avenue near the Empire State Building`;
-  }
-  return original;
+function titleReplacement(original, intent, guidance) {
+  const label = intentLabel(intent, guidance);
+  if (!label || original.toLowerCase().includes(label.toLowerCase())) return original;
+  return `${original}: ${label}`;
 }
 
 function appendSentence(original, sentence) {
@@ -154,4 +128,50 @@ function rankedWeakIntents(evaluations) {
     }))
     .sort((a, b) => a.average - b.average)
     .map((entry) => entry.intent);
+}
+
+function editGuidance({ intent, facts }) {
+  const configured = facts.editStrategy?.guidance?.[intent] || facts.editStrategy?.guidance?.general;
+  if (configured) return configured;
+
+  const signals = facts.protectedFacts?.venueSignals || facts.optimizationSignals || [];
+  const market = facts.market || facts.industry || "the target market";
+  const entity = facts.entity || "the company";
+  const signalText = signals.slice(0, 6).join(", ");
+
+  return `Clarify why ${entity} is a strong fit for ${intent} searches in ${market}${signalText ? ` using verified signals such as ${signalText}` : ""}.`;
+}
+
+function intentLabel(intent, guidance) {
+  const clean = guidance
+    .replace(/^Clarify\s+/i, "")
+    .replace(/\s+using only verified facts\.?$/i, "")
+    .replace(/\s+with factual.*$/i, "")
+    .replace(/\s+with the strongest.*$/i, "")
+    .trim();
+
+  if (clean.length >= 8 && clean.length <= 68) return titleCase(clean);
+  if (intent === "general") return "Clear Recommendation Signals";
+  return `${titleCase(intent)} Recommendation Fit`;
+}
+
+function titleCase(value) {
+  return value
+    .split(/\s+/)
+    .map((word) => word ? `${word[0].toUpperCase()}${word.slice(1)}` : word)
+    .join(" ");
+}
+
+function inferTargetsForIntent({ intent, blocks }) {
+  const exact = blocks
+    .filter((block) => block.editable && !block.protected && block.key.toLowerCase().includes(intent.toLowerCase()))
+    .map((block) => block.key);
+
+  if (exact.length) return exact;
+
+  return blocks
+    .filter((block) => block.editable && !block.protected)
+    .filter((block) => ["h1", "h2", "h3", "p"].includes(block.tag))
+    .slice(0, 6)
+    .map((block) => block.key);
 }

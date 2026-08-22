@@ -3,14 +3,14 @@ import { pageTextFromBlocks } from "./html-content.js";
 const LOCAL_MODELS = [
   {
     id: "local-balanced",
-    description: "Balanced ranking model with equal venue-fit and location weighting.",
+    description: "Balanced ranking model with equal company-fit and market/context weighting.",
     signalWeight: 1,
     locationWeight: 1,
     proofWeight: 1
   },
   {
     id: "local-event-planner",
-    description: "Event-planner model that rewards specific capacity, AV, and event-type facts.",
+    description: "Use-case model that rewards specific proof points and target-intent facts.",
     signalWeight: 1.25,
     locationWeight: 0.85,
     proofWeight: 1.2
@@ -59,8 +59,8 @@ export function summarizeEvaluations(evaluations) {
 }
 
 export function askLocalModel({ model, mode, prompt, siteText, blocks, competitors, facts }) {
-  if (mode === "midtown-only") {
-    return answerMidtownOnly({ model, prompt, siteText, blocks, facts });
+  if (mode === "target-only" || mode === "midtown-only") {
+    return answerTargetOnly({ model, prompt, siteText, blocks, facts });
   }
 
   if (mode === "competitor-bundle") {
@@ -70,15 +70,15 @@ export function askLocalModel({ model, mode, prompt, siteText, blocks, competito
   return answerNoContext({ model, prompt, competitors, facts });
 }
 
-function answerMidtownOnly({ model, prompt, siteText, blocks, facts }) {
+function answerTargetOnly({ model, prompt, siteText, blocks, facts }) {
   const target = buildTargetVenue(siteText, facts);
-  const venueScore = scoreVenue(target, prompt, model);
+  const venueScore = scoreCompany(target, prompt, model);
   const missingSignals = missingRequiredSignals(siteText, prompt.requiredSignals);
   const factsFound = factCoverage(siteText, facts);
   const recommended = venueScore >= 3.5 && missingSignals.length <= 2;
   const response = recommended
-    ? `Based only on the supplied Midtown Loft & Terrace content, I would recommend Midtown Loft & Terrace for this request. The page supports the fit with ${matchedSignals(target, prompt).join(", ")}.`
-    : `Based only on the supplied Midtown Loft & Terrace content, Midtown Loft & Terrace may be relevant, but the page does not clearly establish ${missingSignals.join(", ")}.`;
+    ? `Based only on the supplied ${facts.entity} content, I would recommend ${facts.entity} for this request. The page supports the fit with ${matchedSignals(target, prompt).join(", ")}.`
+    : `Based only on the supplied ${facts.entity} content, ${facts.entity} may be relevant, but the page does not clearly establish ${missingSignals.join(", ")}.`;
 
   return {
     response,
@@ -94,7 +94,7 @@ function answerMidtownOnly({ model, prompt, siteText, blocks, facts }) {
 function answerCompetitorBundle({ model, prompt, siteText, competitors, facts }) {
   const venues = [
     buildTargetVenue(siteText, facts),
-    ...competitors.venues.map((venue) => ({
+    ...competitorEntries(competitors).map((venue) => ({
       name: venue.name,
       text: `${venue.name}. ${venue.summary}`,
       signals: venue.signals || []
@@ -102,14 +102,14 @@ function answerCompetitorBundle({ model, prompt, siteText, competitors, facts })
   ];
 
   const rankings = venues
-    .map((venue) => ({ name: venue.name, score: scoreVenue(venue, prompt, model), signals: matchedSignals(venue, prompt) }))
+    .map((venue) => ({ name: venue.name, score: scoreCompany(venue, prompt, model), signals: matchedSignals(venue, prompt) }))
     .sort((a, b) => b.score - a.score)
     .map((ranking, index) => ({ ...ranking, rank: index + 1 }));
 
   const target = rankings.find((ranking) => ranking.name === facts.entity);
   const top = rankings.slice(0, 3);
   const response = top
-    .map((ranking) => `${ranking.rank}. ${ranking.name} - fit signals: ${ranking.signals.join(", ") || "general venue fit"}.`)
+    .map((ranking) => `${ranking.rank}. ${ranking.name} - fit signals: ${ranking.signals.join(", ") || "general company fit"}.`)
     .join("\n");
 
   return {
@@ -126,17 +126,17 @@ function answerCompetitorBundle({ model, prompt, siteText, competitors, facts })
 function answerNoContext({ model, prompt, competitors, facts }) {
   const publicBaseline = {
     name: facts.entity,
-    text: "Midtown Loft & Terrace is a Midtown Manhattan event venue with loft and terrace spaces near Fifth Avenue.",
-    signals: ["midtown", "manhattan", "event venue", "loft", "terrace", "fifth avenue"]
+    text: facts.defaultContext || `${facts.entity} is a company in ${facts.market || facts.industry || "its market"}.`,
+    signals: configuredSignals(facts)
   };
 
   const venues = [
     publicBaseline,
-    ...competitors.venues.map((venue) => ({ name: venue.name, text: `${venue.name}. ${venue.summary}`, signals: venue.signals || [] }))
+    ...competitorEntries(competitors).map((venue) => ({ name: venue.name, text: `${venue.name}. ${venue.summary}`, signals: venue.signals || [] }))
   ];
 
   const rankings = venues
-    .map((venue) => ({ name: venue.name, score: scoreVenue(venue, prompt, model), signals: matchedSignals(venue, prompt) }))
+    .map((venue) => ({ name: venue.name, score: scoreCompany(venue, prompt, model), signals: matchedSignals(venue, prompt) }))
     .sort((a, b) => b.score - a.score)
     .map((ranking, index) => ({ ...ranking, rank: index + 1 }));
 
@@ -202,7 +202,8 @@ function fitScore(result, prompt, max) {
 
 function factsCoverageScore(factsFound, facts, max, mode) {
   if (mode === "no-context") return Math.round(max * 0.5);
-  const required = ["address", "loftSize", "terraceSize", "loftStanding", "terraceStanding"];
+  const required = facts.protectedFactKeysForScoring || Object.keys(facts.protectedFacts || {}).filter((key) => !Array.isArray(facts.protectedFacts[key])).slice(0, 5);
+  if (!required.length) return Math.round(max * 0.5);
   const found = required.filter((key) => factsFound.includes(key)).length;
   return Math.round(max * (found / required.length));
 }
@@ -212,13 +213,13 @@ function riskScore(flags, max) {
   return Math.max(0, max - flags.length * 4);
 }
 
-function scoreVenue(venue, prompt, model) {
+function scoreCompany(venue, prompt, model) {
   const text = `${venue.text} ${(venue.signals || []).join(" ")}`.toLowerCase();
   const required = prompt.requiredSignals.map((signal) => signal.toLowerCase());
   const exactMatches = required.filter((signal) => text.includes(signal)).length;
   const tokenMatches = required.flatMap((signal) => signal.split(/\s+/)).filter((token) => token.length > 3 && text.includes(token)).length;
-  const locationMatches = ["nyc", "manhattan", "fifth avenue", "empire state building", "midtown"].filter((signal) => text.includes(signal)).length;
-  const proofMatches = ["capacity", "guests", "sq ft", "seated", "standing", "av", "lighting", "screens", "production", "retractable"].filter((signal) => text.includes(signal)).length;
+  const locationMatches = (venue.locationSignals || []).filter((signal) => text.includes(signal.toLowerCase())).length;
+  const proofMatches = (venue.proofSignals || []).filter((signal) => text.includes(signal.toLowerCase())).length;
 
   return exactMatches * 2.5 * model.signalWeight
     + tokenMatches * 0.4 * model.signalWeight
@@ -230,7 +231,9 @@ function buildTargetVenue(siteText, facts) {
   return {
     name: facts.entity,
     text: siteText,
-    signals: facts.protectedFacts.venueSignals.concat(facts.protectedFacts.locationSignals)
+    signals: configuredSignals(facts),
+    locationSignals: facts.protectedFacts?.locationSignals || facts.locationSignals || [],
+    proofSignals: facts.proofSignals || facts.protectedFacts?.venueSignals || []
   };
 }
 
@@ -246,7 +249,7 @@ function missingRequiredSignals(text, signals) {
 
 function factCoverage(text, facts) {
   const lower = text.toLowerCase();
-  return Object.entries(facts.protectedFacts)
+  return Object.entries(facts.protectedFacts || {})
     .filter(([, value]) => {
       if (Array.isArray(value)) return value.some((item) => lower.includes(String(item).toLowerCase()));
       return lower.includes(String(value).toLowerCase());
@@ -256,9 +259,22 @@ function factCoverage(text, facts) {
 
 function riskFlags(text, facts) {
   const lower = text.toLowerCase();
-  const flags = facts.blockedClaims.filter((claim) => lower.includes(claim.toLowerCase()));
+  const flags = (facts.blockedClaims || []).filter((claim) => lower.includes(claim.toLowerCase()));
   if ((lower.match(/best/g) || []).length > 8) flags.push("excessive best-claim repetition");
   return flags;
+}
+
+function configuredSignals(facts) {
+  return [
+    ...(facts.optimizationSignals || []),
+    ...(facts.protectedFacts?.venueSignals || []),
+    ...(facts.protectedFacts?.locationSignals || []),
+    ...(facts.aliases || [])
+  ];
+}
+
+function competitorEntries(competitors) {
+  return competitors.companies || competitors.venues || [];
 }
 
 function groupAverage(evaluations, key) {

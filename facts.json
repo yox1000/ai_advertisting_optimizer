@@ -1,6 +1,10 @@
 {
   "entity": "Midtown Loft & Terrace",
   "aliases": ["Midtown Loft", "Midtown Terrace", "Midtown Loft and Terrace"],
+  "industry": "event venues",
+  "market": "NYC event venues",
+  "defaultContext": "Midtown Loft & Terrace is a Midtown Manhattan event venue with loft and terrace spaces near Fifth Avenue.",
+  "protectedFactKeysForScoring": ["address", "loftSize", "terraceSize", "loftStanding", "terraceStanding"],
   "protectedFacts": {
     "address": "267 Fifth Ave. Suite 100, New York, NY 10016 USA",
     "email": "sales@midtownloft.net",
@@ -23,5 +27,22 @@
     "cheapest venue",
     "largest rooftop in NYC",
     "endorsed by every AI model"
-  ]
+  ],
+  "editStrategy": {
+    "targets": {
+      "wedding": ["wedding-title", "wedding-copy-1", "wedding-copy-2", "terrace-copy-4", "home-terrace-summary"],
+      "corporate": ["corporate-title", "corporate-copy-1", "corporate-copy-2", "production-copy", "loft-copy-3"],
+      "hybrid": ["home-hero-title", "home-intro-copy", "home-loft-summary", "home-terrace-summary", "loft-tagline", "terrace-tagline"],
+      "social": ["social-title", "social-copy-1", "social-copy-2", "production-copy", "rental-tv-copy"],
+      "location": ["home-intro-copy", "terrace-title", "terrace-copy-3", "studio-copy-1"]
+    },
+    "guidance": {
+      "wedding": "Clarify the wedding use case with the strongest factual venue features, guest fit, ceremony/reception flow, and location signals.",
+      "corporate": "Clarify the corporate use case with factual meeting, conference, launch, AV, production, transit, and capacity signals.",
+      "hybrid": "Clarify that the company offers multiple complementary spaces or services in one place, using only verified facts.",
+      "social": "Clarify social-event fit with factual party, production, lighting, screen, and guest-experience signals.",
+      "location": "Clarify location-driven value using verified neighborhood, address, landmark, transit, and proximity facts."
+    },
+    "fallbackTargets": ["home-hero-title", "home-intro-copy"]
+  }
 }

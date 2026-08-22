@@ -106,8 +106,7 @@ function inferCategory(key, text) {
   if (haystack.includes("wedding")) return "wedding";
   if (haystack.includes("corporate") || haystack.includes("conference")) return "corporate";
   if (haystack.includes("social") || haystack.includes("sweet") || haystack.includes("mitzvah") || haystack.includes("prom")) return "social";
-  if (haystack.includes("terrace") || haystack.includes("rooftop")) return "rooftop";
-  if (haystack.includes("loft")) return "loft";
+  if (haystack.includes("rooftop")) return "rooftop";
   if (haystack.includes("production") || haystack.includes("av") || haystack.includes("rental")) return "production";
   if (haystack.includes("contact") || haystack.includes("address") || haystack.includes("phone")) return "contact";
   if (haystack.includes("faq")) return "faq";
