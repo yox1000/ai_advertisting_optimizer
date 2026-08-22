@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "optimize": "node optimizer/run.js",
-    "optimize:openai": "node optimizer/run.js --providers=openai --iterations=1",
-    "optimize:real": "node optimizer/run.js --providers=openai,deepseek --iterations=1",
+    "optimize:openai": "node optimizer/run.js --providers=openai --iterations=1 --max-candidates=1",
+    "optimize:real": "node optimizer/run.js --providers=openai,deepseek --iterations=1 --max-candidates=1",
+    "baseline:openai": "node optimizer/run.js --providers=openai --iterations=1 --evaluate-candidates=false",
+    "baseline:real": "node optimizer/run.js --providers=openai,deepseek --iterations=1 --evaluate-candidates=false",
     "extract:content": "node optimizer/extract-content.js",
     "serve": "python3 -m http.server 8080"
   }

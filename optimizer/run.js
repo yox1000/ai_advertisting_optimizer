@@ -14,6 +14,8 @@ const runDir = join("optimizer", "runs", runId);
 const maxIterations = Number(getArgValue("--iterations") || 3);
 const providerNames = parseProviderNames(getArgValue("--providers") || "local");
 const usingRealProviders = providerNames.length > 0;
+const evaluateCandidates = getArgValue("--evaluate-candidates") !== "false";
+const maxCandidates = Number(getArgValue("--max-candidates") || 3);
 
 loadDotEnv();
 
@@ -32,17 +34,28 @@ const iterations = [];
 
 for (let iteration = 1; iteration <= maxIterations; iteration += 1) {
   const workingBlocks = extractAiBlocks(workingHtml);
-  const baselineEvaluations = await evaluateCurrent({ blocks: workingBlocks });
+  const baselineEvaluations = await evaluateCurrent({ blocks: workingBlocks, phase: `iteration ${iteration} baseline` });
   const baselineSummary = summarizeEvaluations(baselineEvaluations);
-  const candidateSets = generateCandidateEditSets({ evaluations: baselineEvaluations, blocks: workingBlocks, facts });
+  if (!evaluateCandidates) {
+    iterations.push({
+      iteration,
+      baseline: baselineSummary,
+      accepted: null,
+      candidates: []
+    });
+    finalSummary = baselineSummary;
+    break;
+  }
+  const candidateSets = generateCandidateEditSets({ evaluations: baselineEvaluations, blocks: workingBlocks, facts, maxCandidates });
   const candidateReports = [];
 
   for (const candidate of candidateSets) {
+    console.log(`Scoring ${candidate.id}: ${candidate.intent}`);
     const candidateHtml = applyTextEdits(workingHtml, candidate.edits);
     const validation = validateCandidate({ html: candidateHtml, facts, edits: candidate.edits });
     const candidateBlocks = extractAiBlocks(candidateHtml);
     const evaluations = validation.valid
-      ? await evaluateCurrent({ blocks: candidateBlocks })
+      ? await evaluateCurrent({ blocks: candidateBlocks, phase: `iteration ${iteration} ${candidate.id}` })
       : [];
     const summary = validation.valid ? summarizeEvaluations(evaluations) : null;
     const decision = decideCandidate({ baselineSummary, summary, validation });
@@ -96,6 +109,8 @@ const report = {
   providers: usingRealProviders ? providerNames : ["local"],
   models: usingRealProviders ? providerNames : ["local-balanced", "local-event-planner", "local-skeptic"],
   maxIterations,
+  evaluateCandidates,
+  maxCandidates,
   initialBaseline: iterations[0]?.baseline || null,
   finalSummary,
   iterations
@@ -108,6 +123,8 @@ console.log(`Run: ${runId}`);
 console.log(`Initial overall: ${report.initialBaseline?.overall ?? "n/a"}`);
 console.log(`Initial by mode: ${formatModeScores(report.initialBaseline?.byMode || {})}`);
 console.log(`Providers: ${report.providers.join(", ")}`);
+console.log(`Evaluate candidates: ${evaluateCandidates ? "yes" : "no"}`);
+console.log(`Max candidates: ${maxCandidates}`);
 console.log(`Iterations completed: ${iterations.length}`);
 console.log(`Accepted candidates: ${iterations.filter((iteration) => iteration.accepted).length}`);
 console.log(`Final overall: ${finalSummary?.overall ?? "n/a"}`);
@@ -140,9 +157,9 @@ function decideCandidate({ baselineSummary, summary, validation }) {
   };
 }
 
-async function evaluateCurrent({ blocks }) {
+async function evaluateCurrent({ blocks, phase }) {
   if (usingRealProviders) {
-    return evaluateWithProviders({ providerNames, blocks, prompts, competitors, facts });
+    return evaluateWithProviders({ providerNames, blocks, prompts, competitors, facts, onProgress: (event) => logProviderProgress(event, phase) });
   }
   return evaluateAll({ blocks, prompts, competitors, facts });
 }
@@ -178,6 +195,10 @@ Modes: ${report.modes.join(", ")}
 Providers: ${report.providers.join(", ")}
 
 Max iterations: ${report.maxIterations}
+
+Evaluate candidates: ${report.evaluateCandidates ? "yes" : "no"}
+
+Max candidates: ${report.maxCandidates}
 
 ## Initial Baseline
 
@@ -235,4 +256,13 @@ function getArgValue(name) {
   const exact = process.argv.find((arg) => arg.startsWith(`${name}=`));
   if (!exact) return null;
   return exact.slice(name.length + 1);
+}
+
+function logProviderProgress(event, phase) {
+  const prefix = phase ? `[${phase}] ` : "";
+  if (event.type === "start") {
+    console.log(`${prefix}[${event.completed + 1}/${event.total}] ${event.provider}:${event.model} ${event.mode} ${event.promptId}`);
+    return;
+  }
+  console.log(`${prefix}[${event.completed}/${event.total}] done ${event.provider}:${event.model} ${event.mode} ${event.promptId} score=${event.score}`);
 }

@@ -26,8 +26,10 @@ See `optimizer/example-facts.generic.json` for a generic facts template.
 npm run extract:content
 npm run optimize
 npm run optimize -- --iterations=5
-npm run optimize -- --providers=openai --iterations=1
-npm run optimize -- --providers=openai,deepseek --iterations=1
+npm run baseline:openai
+npm run baseline:real
+npm run optimize:openai
+npm run optimize:real
 ```
 
 `npm run optimize` creates:
@@ -68,13 +70,39 @@ Do not commit `.env`. It is ignored by git.
 Run OpenAI only:
 
 ```bash
-npm run optimize -- --providers=openai --iterations=1
+npm run baseline:openai
 ```
 
 Run OpenAI and DeepSeek:
 
 ```bash
-npm run optimize -- --providers=openai,deepseek --iterations=1
+npm run baseline:real
+```
+
+Those baseline commands only produce a report. They do not score candidate edits.
+
+Run one recursive candidate-edit pass with OpenAI only:
+
+```bash
+npm run optimize:openai
+```
+
+Run one recursive candidate-edit pass with OpenAI and DeepSeek:
+
+```bash
+npm run optimize:real
+```
+
+Real provider runs print progress for each model call. A normal `baseline:real` run currently performs 30 calls: two providers, three modes, and five prompts. A normal `optimize:real` run performs those 30 baseline calls plus 30 more calls for one candidate edit path. To test more candidate paths:
+
+```bash
+npm run optimize -- --providers=openai,deepseek --iterations=1 --max-candidates=3
+```
+
+Provider calls time out after 60 seconds by default. To shorten that while testing:
+
+```bash
+MODEL_TIMEOUT_MS=30000 npm run baseline:real
 ```
 
 OpenAI uses the Responses API. DeepSeek uses its OpenAI-compatible chat completions endpoint.

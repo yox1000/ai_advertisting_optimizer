@@ -24,19 +24,31 @@ export function parseProviderNames(value) {
   return value.split(",").map((name) => name.trim()).filter(Boolean);
 }
 
-export async function evaluateWithProviders({ providerNames, blocks, prompts, competitors, facts, modes = prompts.modes }) {
+export async function evaluateWithProviders({ providerNames, blocks, prompts, competitors, facts, modes = prompts.modes, onProgress }) {
   const siteText = pageTextFromBlocks(blocks);
   const evaluations = [];
+  const total = providerNames.length * modes.length * prompts.prompts.length;
+  let completed = 0;
 
   for (const providerName of providerNames) {
     const provider = resolveProvider(providerName);
 
     for (const mode of modes) {
       for (const prompt of prompts.prompts) {
+        onProgress?.({
+          type: "start",
+          completed,
+          total,
+          provider: providerName,
+          model: provider.model,
+          mode,
+          promptId: prompt.id
+        });
         const input = buildModePrompt({ mode, prompt, siteText, competitors, facts });
         const response = await callProvider({ provider, input });
         const result = resultFromModelResponse({ response, prompt, mode, siteText, facts });
         const score = scoreResult({ result, prompt, mode, facts, weights: prompts.weights });
+        completed += 1;
 
         evaluations.push({
           model: `${providerName}:${provider.model}`,
@@ -46,6 +58,16 @@ export async function evaluateWithProviders({ providerNames, blocks, prompts, co
           question: prompt.question,
           result,
           score
+        });
+        onProgress?.({
+          type: "finish",
+          completed,
+          total,
+          provider: providerName,
+          model: provider.model,
+          mode,
+          promptId: prompt.id,
+          score: score.total
         });
       }
     }
@@ -131,7 +153,7 @@ async function callProvider({ provider, input }) {
 }
 
 async function callResponses(provider, input) {
-  const res = await fetch(provider.url, {
+  const res = await fetchWithTimeout(provider.url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -145,14 +167,14 @@ async function callResponses(provider, input) {
       ],
       store: false
     })
-  });
+  }, provider.timeoutMs);
 
   const data = await parseApiResponse(res);
   return data.output_text || extractResponsesText(data);
 }
 
 async function callChatCompletions(provider, input) {
-  const res = await fetch(provider.url, {
+  const res = await fetchWithTimeout(provider.url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -166,7 +188,7 @@ async function callChatCompletions(provider, input) {
       ],
       temperature: 0.2
     })
-  });
+  }, provider.timeoutMs);
 
   const data = await parseApiResponse(res);
   return data.choices?.[0]?.message?.content || "";
@@ -200,4 +222,20 @@ function extractResponsesText(data) {
 
 function competitorEntries(competitors) {
   return competitors.companies || competitors.venues || [];
+}
+
+async function fetchWithTimeout(url, options, timeoutMs = Number(process.env.MODEL_TIMEOUT_MS || 60000)) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error(`Provider request timed out after ${timeoutMs}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
