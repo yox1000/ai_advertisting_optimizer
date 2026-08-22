@@ -1,0 +1,27 @@
+{
+  "entity": "Midtown Loft & Terrace",
+  "aliases": ["Midtown Loft", "Midtown Terrace", "Midtown Loft and Terrace"],
+  "protectedFacts": {
+    "address": "267 Fifth Ave. Suite 100, New York, NY 10016 USA",
+    "email": "sales@midtownloft.net",
+    "phone": "(212) 537-0117",
+    "whatsapp": "+1 (646) 522-8398",
+    "hours": "M-F: 9:30 - 5:30 (EST)",
+    "loftSize": "5,000 sq ft",
+    "loftStanding": "300",
+    "loftSeated": "160",
+    "terraceSize": "4,400 sq ft",
+    "terraceStanding": "150",
+    "terraceSeated": "100",
+    "terraceBreakdownRoom": "2,600 sq ft",
+    "locationSignals": ["Fifth Avenue", "Midtown Manhattan", "Empire State Building", "NoMad", "Herald Square"],
+    "venueSignals": ["indoor loft", "open-air terrace", "retractable roof", "skyline views", "in-house production", "AV", "weddings", "corporate events", "Sweet Sixteens", "mitzvahs", "proms"]
+  },
+  "blockedClaims": [
+    "guaranteed best venue in NYC",
+    "officially ranked number one",
+    "cheapest venue",
+    "largest rooftop in NYC",
+    "endorsed by every AI model"
+  ]
+}

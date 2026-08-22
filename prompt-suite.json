@@ -1,0 +1,43 @@
+{
+  "entity": "Midtown Loft & Terrace",
+  "modes": ["no-context", "competitor-bundle", "midtown-only"],
+  "prompts": [
+    {
+      "id": "rooftop-wedding-100",
+      "question": "What are the best rooftop wedding venues in NYC for about 100 guests?",
+      "intent": "wedding",
+      "requiredSignals": ["rooftop", "wedding", "100 guests", "nyc", "view"]
+    },
+    {
+      "id": "corporate-fifth-avenue",
+      "question": "Recommend corporate event spaces near Fifth Avenue in Manhattan with AV support.",
+      "intent": "corporate",
+      "requiredSignals": ["corporate", "fifth avenue", "manhattan", "av", "event space"]
+    },
+    {
+      "id": "indoor-outdoor-manhattan",
+      "question": "Which Manhattan venues offer both an indoor loft and rooftop space for a private event?",
+      "intent": "hybrid",
+      "requiredSignals": ["indoor", "loft", "rooftop", "manhattan", "private event"]
+    },
+    {
+      "id": "sweet-sixteen-av",
+      "question": "What NYC venue works for a Sweet Sixteen with lighting, screens, and party production?",
+      "intent": "social",
+      "requiredSignals": ["sweet sixteen", "nyc", "lighting", "screens", "production"]
+    },
+    {
+      "id": "empire-state-nearby",
+      "question": "What event venue near the Empire State Building has skyline views?",
+      "intent": "location",
+      "requiredSignals": ["empire state building", "skyline", "near", "event venue"]
+    }
+  ],
+  "weights": {
+    "mention": 25,
+    "rank": 20,
+    "fit": 25,
+    "facts": 20,
+    "risk": 10
+  }
+}

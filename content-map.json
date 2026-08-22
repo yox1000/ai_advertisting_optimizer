@@ -1,0 +1,934 @@
+{
+  "generatedAt": "2026-08-22T17:50:01.760Z",
+  "count": 116,
+  "blocks": [
+    {
+      "key": "utility-email",
+      "tag": "a",
+      "category": "loft",
+      "editable": false,
+      "protected": true,
+      "text": "sales@midtownloft.net"
+    },
+    {
+      "key": "utility-phone",
+      "tag": "a",
+      "category": "contact",
+      "editable": false,
+      "protected": true,
+      "text": "(212) 537-0117"
+    },
+    {
+      "key": "utility-whatsapp",
+      "tag": "a",
+      "category": "general",
+      "editable": false,
+      "protected": true,
+      "text": "WhatsApp: +1 (646) 522-8398"
+    },
+    {
+      "key": "site-brand",
+      "tag": "span",
+      "category": "rooftop",
+      "editable": false,
+      "protected": true,
+      "text": "MIDTOWN LOFT & TERRACE"
+    },
+    {
+      "key": "home-hero-title",
+      "tag": "h1",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft & Terrace: Manhattan's Premier Event Venue"
+    },
+    {
+      "key": "home-intro-copy",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft & Terrace is your all-in-one venue, offering both a stunning loft and an open-air terrace with a retractable roof at a prime Fifth Avenue location near the Marble Collegiate Church, The Church of the Transfiguration, NoMad, Koreatown, Flatiron, Eataly, Herald Square, Macy's, PATH, and LIRR. It offers magnificent views of the Empire State Building and the NYC skyline."
+    },
+    {
+      "key": "home-event-copy",
+      "tag": "p",
+      "category": "wedding",
+      "editable": true,
+      "protected": false,
+      "text": "Whether it is a corporate event, private party, wedding, graduation, prom, or sweet sixteen, Midtown Loft and Terrace's versatile space makes it easy to bring any event to life."
+    },
+    {
+      "key": "home-loft-title",
+      "tag": "h2",
+      "category": "loft",
+      "editable": false,
+      "protected": false,
+      "text": "Loft"
+    },
+    {
+      "key": "home-loft-summary",
+      "tag": "p",
+      "category": "loft",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft (5,000 square ft) is our premier indoor event space, accommodating up to 300 people for cocktails and comfortably seating 180 for formal dinners."
+    },
+    {
+      "key": "home-loft-cta",
+      "tag": "a",
+      "category": "loft",
+      "editable": false,
+      "protected": false,
+      "text": "View the Loft"
+    },
+    {
+      "key": "home-terrace-title",
+      "tag": "h2",
+      "category": "rooftop",
+      "editable": false,
+      "protected": false,
+      "text": "Terrace"
+    },
+    {
+      "key": "home-terrace-summary",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Terrace (4,400 square ft), our open-air Terrace, can comfortably accommodate up to 150 guests, with a retractable enclosed rooftop so the Terrace can be utilized year round."
+    },
+    {
+      "key": "home-terrace-cta",
+      "tag": "a",
+      "category": "rooftop",
+      "editable": false,
+      "protected": false,
+      "text": "View the Terrace"
+    },
+    {
+      "key": "home-tour-title",
+      "tag": "h2",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft & Terrace Virtual Tour"
+    },
+    {
+      "key": "loft-script-heading",
+      "tag": "p",
+      "category": "loft",
+      "editable": false,
+      "protected": false,
+      "text": "Loft"
+    },
+    {
+      "key": "loft-title",
+      "tag": "h2",
+      "category": "loft",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft: A Stylish Fifth Avenue Event Space"
+    },
+    {
+      "key": "loft-copy-1",
+      "tag": "p",
+      "category": "loft",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft features high ceilings, marble bathrooms, central air, adjustable spotlighting, and a fully equipped kitchen."
+    },
+    {
+      "key": "loft-copy-2",
+      "tag": "p",
+      "category": "loft",
+      "editable": true,
+      "protected": false,
+      "text": "Located on the world-famous Fifth Avenue, NYC, Midtown Loft offers style and sophistication with stunning skyline views and natural light through large windows."
+    },
+    {
+      "key": "loft-copy-3",
+      "tag": "p",
+      "category": "wedding",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft & Terrace consists of two venues that are a perfect fit for corporate events, conferences, wedding ceremonies, cocktail hours, private events, product launches, fashion shows, galas, fundraisers, and trade shows, with flexible setup options for indoor and rooftop gatherings."
+    },
+    {
+      "key": "loft-tour-title",
+      "tag": "h3",
+      "category": "loft",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft Venue Virtual Tour"
+    },
+    {
+      "key": "loft-tagline",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft & Terrace: All-in-One Event Venues in the heart of Manhattan, NYC. Adaptable, bright, spacious."
+    },
+    {
+      "key": "loft-size",
+      "tag": "dd",
+      "category": "loft",
+      "editable": false,
+      "protected": true,
+      "text": "5,000 sq ft"
+    },
+    {
+      "key": "loft-seated",
+      "tag": "dd",
+      "category": "loft",
+      "editable": false,
+      "protected": true,
+      "text": "160 with round tables, a dance floor, and a stage"
+    },
+    {
+      "key": "loft-standing",
+      "tag": "dd",
+      "category": "loft",
+      "editable": false,
+      "protected": true,
+      "text": "Maximum standing capacity 300"
+    },
+    {
+      "key": "loft-included",
+      "tag": "dd",
+      "category": "loft",
+      "editable": true,
+      "protected": false,
+      "text": "Furnishings, in-house production options, marble bathrooms, kitchen, and lighting flexibility"
+    },
+    {
+      "key": "loft-gallery-title",
+      "tag": "h3",
+      "category": "loft",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft Event Venue Gallery"
+    },
+    {
+      "key": "terrace-script-heading",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": false,
+      "protected": false,
+      "text": "Terrace"
+    },
+    {
+      "key": "terrace-title",
+      "tag": "h2",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Terrace: Rooftop Venue near the Empire State Building"
+    },
+    {
+      "key": "terrace-copy-1",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Terrace is a genuinely unique event space, featuring a retractable enclosed rooftop, a modern lobby, and a private elevator that opens onto it."
+    },
+    {
+      "key": "terrace-copy-2",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "The upscale interior space features mahogany floors, copper windows, antique light fixtures, and a stunning fireplace, perfect for drinks and conversation."
+    },
+    {
+      "key": "terrace-copy-3",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "The landscaped Terrace offers a 360-degree view of the Manhattan skyline, including iconic landmarks like the Empire State Building and Marble Collegiate Church."
+    },
+    {
+      "key": "terrace-copy-4",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "With its versatile layout and breathtaking city views, the Midtown Terrace is the perfect venue for cocktail receptions, networking events, intimate celebrations, and year-round event planning."
+    },
+    {
+      "key": "terrace-tour-title",
+      "tag": "h3",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Terrace Virtual Tour"
+    },
+    {
+      "key": "terrace-tagline",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Terrace Venue with stunning city views in the heart of Manhattan."
+    },
+    {
+      "key": "terrace-size",
+      "tag": "dd",
+      "category": "rooftop",
+      "editable": false,
+      "protected": true,
+      "text": "4,400 sq ft"
+    },
+    {
+      "key": "terrace-breakdown",
+      "tag": "dd",
+      "category": "rooftop",
+      "editable": false,
+      "protected": true,
+      "text": "2,600 sq ft breakdown room available upon request"
+    },
+    {
+      "key": "terrace-seated",
+      "tag": "dd",
+      "category": "rooftop",
+      "editable": false,
+      "protected": true,
+      "text": "100 seated capacity with round tables"
+    },
+    {
+      "key": "terrace-standing",
+      "tag": "dd",
+      "category": "rooftop",
+      "editable": false,
+      "protected": true,
+      "text": "Up to 150 guests for cocktail-style events"
+    },
+    {
+      "key": "terrace-gallery-title",
+      "tag": "h3",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Terrace Event Space Gallery"
+    },
+    {
+      "key": "studio-script-heading",
+      "tag": "p",
+      "category": "general",
+      "editable": false,
+      "protected": false,
+      "text": "Studio"
+    },
+    {
+      "key": "studio-title",
+      "tag": "h2",
+      "category": "general",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Studio NYC: Flexible Meeting and Event Space in Midtown Manhattan"
+    },
+    {
+      "key": "studio-copy-1",
+      "tag": "p",
+      "category": "production",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Studio NYC is a flexible and inviting event space at 267 Fifth Avenue in Midtown Manhattan, just a short walk from the Empire State Building, Herald Square, and the NoMad neighborhood."
+    },
+    {
+      "key": "studio-copy-2",
+      "tag": "p",
+      "category": "corporate",
+      "editable": true,
+      "protected": false,
+      "text": "Designed for smaller-scale events, Midtown Studio NYC works well for corporate meetings, workshops, presentations, private classes, creative sessions, art displays, and intimate gatherings."
+    },
+    {
+      "key": "studio-copy-3",
+      "tag": "p",
+      "category": "corporate",
+      "editable": true,
+      "protected": false,
+      "text": "The space has a clean, modern feel with a practical layout, LCD screen, lounge seating, a conference table, and games for a flexible private event setup."
+    },
+    {
+      "key": "studio-tour-title",
+      "tag": "h3",
+      "category": "general",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Studio Virtual Tour"
+    },
+    {
+      "key": "studio-tagline",
+      "tag": "p",
+      "category": "general",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Studio: A flexible event space in the heart of Manhattan."
+    },
+    {
+      "key": "studio-furnishings",
+      "tag": "ul",
+      "category": "corporate",
+      "editable": false,
+      "protected": false,
+      "text": "Large open studio layout Conference table with executive chairs Flat screen TV / presentation monitor Black lounge seating area Table tennis setup and foosball table Hardwood floors, high ceilings, track lighting, and built-in uplighting"
+    },
+    {
+      "key": "floorplans-script-heading",
+      "tag": "p",
+      "category": "general",
+      "editable": false,
+      "protected": false,
+      "text": "Plan"
+    },
+    {
+      "key": "floorplans-title",
+      "tag": "h2",
+      "category": "general",
+      "editable": false,
+      "protected": false,
+      "text": "Floor Plans"
+    },
+    {
+      "key": "floorplans-loft-title",
+      "tag": "h3",
+      "category": "loft",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft Event Space Floor Plans"
+    },
+    {
+      "key": "floorplans-terrace-title",
+      "tag": "h3",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Terrace Venue Floor Plans"
+    },
+    {
+      "key": "events-script-heading",
+      "tag": "p",
+      "category": "general",
+      "editable": false,
+      "protected": false,
+      "text": "Events"
+    },
+    {
+      "key": "events-title",
+      "tag": "h2",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Events at Midtown Loft & Terrace"
+    },
+    {
+      "key": "corporate-title",
+      "tag": "h3",
+      "category": "corporate",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft & Terrace Corporate Events"
+    },
+    {
+      "key": "corporate-copy-1",
+      "tag": "p",
+      "category": "corporate",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft & Terrace is NYC's premier event space, offering the perfect setting for a diverse range of events, including product launches, galas, fashion shows, trade shows, and fundraisers."
+    },
+    {
+      "key": "corporate-copy-2",
+      "tag": "p",
+      "category": "corporate",
+      "editable": true,
+      "protected": false,
+      "text": "With stunning skyline views of Manhattan's 5th Avenue and an in-house production company, the team provides essentials for creating a seamless and memorable experience."
+    },
+    {
+      "key": "wedding-title",
+      "tag": "h3",
+      "category": "wedding",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft & Terrace Wedding Venues"
+    },
+    {
+      "key": "wedding-copy-1",
+      "tag": "p",
+      "category": "wedding",
+      "editable": true,
+      "protected": false,
+      "text": "Nothing says a New York City wedding like Midtown Loft & Terrace. Guests can take in gorgeous city views as couples say \"I do\" on the landscaped Terrace."
+    },
+    {
+      "key": "wedding-copy-2",
+      "tag": "p",
+      "category": "wedding",
+      "editable": true,
+      "protected": false,
+      "text": "Host a ceremony with a skyline backdrop, followed by cocktail hour on the Terrace and a stylish reception in the elegant Midtown Loft."
+    },
+    {
+      "key": "social-title",
+      "tag": "h3",
+      "category": "social",
+      "editable": true,
+      "protected": false,
+      "text": "Mitzvahs, Sweet Sixteens, Proms & Galas"
+    },
+    {
+      "key": "social-copy-1",
+      "tag": "p",
+      "category": "social",
+      "editable": true,
+      "protected": false,
+      "text": "It would be our pleasure to host your special celebration at Midtown Loft & Terrace, a premier event space in NYC that has welcomed countless Bar/Bat Mitzvahs, Sweet Sixteens, and Proms."
+    },
+    {
+      "key": "social-copy-2",
+      "tag": "p",
+      "category": "social",
+      "editable": true,
+      "protected": false,
+      "text": "With Midtown Loft Productions, events can include TV screens, uplighting, lounge furniture, and party-ready production rentals."
+    },
+    {
+      "key": "production-script-heading",
+      "tag": "p",
+      "category": "production",
+      "editable": false,
+      "protected": false,
+      "text": "Decor"
+    },
+    {
+      "key": "production-title",
+      "tag": "h2",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Midtown Loft & Terrace Event AV & Productions"
+    },
+    {
+      "key": "production-copy",
+      "tag": "p",
+      "category": "corporate",
+      "editable": true,
+      "protected": false,
+      "text": "No one knows Midtown Loft & Terrace better than our in-house production team. Renting with Midtown Productions helps upcoming events have AV equipment, corporate cocktail-style rentals, social party club rentals, decor, and furniture suited to the venue."
+    },
+    {
+      "key": "rental-uplights-title",
+      "tag": "h3",
+      "category": "production",
+      "editable": true,
+      "protected": false,
+      "text": "LED Up-Lights"
+    },
+    {
+      "key": "rental-uplights-copy",
+      "tag": "p",
+      "category": "production",
+      "editable": true,
+      "protected": false,
+      "text": "Option 1: 20 LED up-lights. Option 2: 32 LED up-lights."
+    },
+    {
+      "key": "rental-loft-lounge-title",
+      "tag": "h3",
+      "category": "loft",
+      "editable": true,
+      "protected": false,
+      "text": "Loft Lounge Setup"
+    },
+    {
+      "key": "rental-loft-lounge-copy",
+      "tag": "p",
+      "category": "loft",
+      "editable": true,
+      "protected": false,
+      "text": "White leather lounge setups, cocktail arrangements, bar stools, and room-shaping furniture."
+    },
+    {
+      "key": "rental-terrace-lounge-title",
+      "tag": "h3",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Terrace Lounge Furniture"
+    },
+    {
+      "key": "rental-terrace-lounge-copy",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Terrace furnishings and illuminated package options for rooftop events."
+    },
+    {
+      "key": "rental-tv-title",
+      "tag": "h3",
+      "category": "production",
+      "editable": false,
+      "protected": false,
+      "text": "TV Setup"
+    },
+    {
+      "key": "rental-tv-copy",
+      "tag": "p",
+      "category": "production",
+      "editable": true,
+      "protected": false,
+      "text": "Large-format 4K and 8K TV setup options for presentations, signage, and event visuals."
+    },
+    {
+      "key": "reviews-script-heading",
+      "tag": "p",
+      "category": "review",
+      "editable": false,
+      "protected": false,
+      "text": "Reviews"
+    },
+    {
+      "key": "reviews-title",
+      "tag": "h2",
+      "category": "wedding",
+      "editable": true,
+      "protected": false,
+      "text": "WeddingWire Reviews"
+    },
+    {
+      "key": "review-1",
+      "tag": "blockquote",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "\"I cannot thank you enough for caring about your clients and offering such an outstanding service. Thank You everyone at Midtown Loft & Terrace for making our event a memorable one.\""
+    },
+    {
+      "key": "review-2",
+      "tag": "blockquote",
+      "category": "production",
+      "editable": true,
+      "protected": false,
+      "text": "\"The entire Midtown team went above and beyond to look out for our best interest. We also used their in-house free AV system which worked seamlessly.\""
+    },
+    {
+      "key": "review-3",
+      "tag": "blockquote",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "\"Fantastic venue with amazing views. We had the pleasure of having our company event at Midtown Loft and Terrace. Rooftop is gorgeous, gorgeous, gorgeous.\""
+    },
+    {
+      "key": "review-4",
+      "tag": "blockquote",
+      "category": "wedding",
+      "editable": true,
+      "protected": false,
+      "text": "\"Midtown Loft is best location for a New York Wedding. Our family and friends were blown away by the beauty of the rooftop space. The view is unreal.\""
+    },
+    {
+      "key": "review-5",
+      "tag": "blockquote",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "\"Midtown Loft & Terrace is a 5 star event space that makes you feel at home. Amazing support team with great service, spotless floors, white marble bathrooms, and green rooftop.\""
+    },
+    {
+      "key": "review-6",
+      "tag": "blockquote",
+      "category": "social",
+      "editable": true,
+      "protected": false,
+      "text": "\"A phenomenal experience. We rented both the loft and terrace. Both venues were absolutely breathtaking. Thank you Midtown Loft & Terrace for making my daughter's Sweet 16 unforgettable.\""
+    },
+    {
+      "key": "faq-script-heading",
+      "tag": "p",
+      "category": "faq",
+      "editable": false,
+      "protected": false,
+      "text": "FAQ"
+    },
+    {
+      "key": "faq-title",
+      "tag": "h2",
+      "category": "faq",
+      "editable": true,
+      "protected": false,
+      "text": "Frequently Asked Questions"
+    },
+    {
+      "key": "faq-furniture-q",
+      "tag": "summary",
+      "category": "faq",
+      "editable": true,
+      "protected": false,
+      "text": "What does the furniture include?"
+    },
+    {
+      "key": "faq-furniture-a",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "The included Loft furniture is made of five sets, each with one white leather couch and one glass coffee table. The Alcove furniture includes three white leather couches and one coffee table. The Terrace includes one navy velour sofa, three grey ottomans, a round wooden coffee table, and a mahogany bar."
+    },
+    {
+      "key": "faq-tables-q",
+      "tag": "summary",
+      "category": "faq",
+      "editable": true,
+      "protected": false,
+      "text": "What standard tables are included?"
+    },
+    {
+      "key": "faq-tables-a",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "The venue includes two 6 ft and two 8 ft standard buffet tables in the Loft, and four 6 ft standard buffet tables on the Terrace. All other tables and chairs must be rented."
+    },
+    {
+      "key": "faq-measurements-q",
+      "tag": "summary",
+      "category": "faq",
+      "editable": true,
+      "protected": false,
+      "text": "What are the measurements of the furniture?"
+    },
+    {
+      "key": "faq-measurements-a",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "The Loft bar base and top are approximately 86 in x 33.5 in x 45.5 in. The Terrace mahogany bar top is about 4 ft 6 in by 2 ft, with a 3 ft 4 in height."
+    },
+    {
+      "key": "faq-sound-q",
+      "tag": "summary",
+      "category": "faq",
+      "editable": true,
+      "protected": false,
+      "text": "What is the sound system compatibility?"
+    },
+    {
+      "key": "faq-sound-a",
+      "tag": "p",
+      "category": "loft",
+      "editable": true,
+      "protected": false,
+      "text": "DJs are not allowed to hook into the venue system and must provide their own equipment. The venue provides a wireless microphone for the Loft and a small mixer for basic use."
+    },
+    {
+      "key": "faq-lighting-q",
+      "tag": "summary",
+      "category": "faq",
+      "editable": true,
+      "protected": false,
+      "text": "Is there outside lighting?"
+    },
+    {
+      "key": "faq-lighting-a",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": true,
+      "protected": false,
+      "text": "Yes, the Terrace includes outside lighting for evening events."
+    },
+    {
+      "key": "faq-freight-q",
+      "tag": "summary",
+      "category": "faq",
+      "editable": true,
+      "protected": false,
+      "text": "Where is the freight elevator located?"
+    },
+    {
+      "key": "faq-freight-a",
+      "tag": "p",
+      "category": "production",
+      "editable": true,
+      "protected": false,
+      "text": "The freight elevator is located on 1/2 East 29th Street between Madison and 5th Avenue, closer to 5th Avenue, at the loading dock between the church and bank on the right hand side of the street."
+    },
+    {
+      "key": "faq-bar-q",
+      "tag": "summary",
+      "category": "faq",
+      "editable": true,
+      "protected": false,
+      "text": "Can we make an outside bar?"
+    },
+    {
+      "key": "faq-bar-a",
+      "tag": "p",
+      "category": "faq",
+      "editable": true,
+      "protected": false,
+      "text": "Yes, using the venue's standard buffet tables. Leg extensions would need to be added."
+    },
+    {
+      "key": "faq-ceiling-q",
+      "tag": "summary",
+      "category": "faq",
+      "editable": true,
+      "protected": false,
+      "text": "What are the ceiling heights?"
+    },
+    {
+      "key": "faq-ceiling-a",
+      "tag": "p",
+      "category": "faq",
+      "editable": true,
+      "protected": false,
+      "text": "The ceiling is 12 ft high and approximately 11 ft high at the beams."
+    },
+    {
+      "key": "faq-rental-q",
+      "tag": "summary",
+      "category": "production",
+      "editable": true,
+      "protected": false,
+      "text": "What is the scheduling for rental pick-up and drop-off?"
+    },
+    {
+      "key": "faq-rental-a",
+      "tag": "p",
+      "category": "production",
+      "editable": true,
+      "protected": false,
+      "text": "All rentals and deliveries must be dropped off between 9am-12noon and 2pm-5pm, and must be picked up after the event before the contracted breakdown time."
+    },
+    {
+      "key": "contact-script-heading",
+      "tag": "p",
+      "category": "contact",
+      "editable": false,
+      "protected": false,
+      "text": "Visit"
+    },
+    {
+      "key": "contact-title",
+      "tag": "h2",
+      "category": "contact",
+      "editable": false,
+      "protected": false,
+      "text": "Contact Us"
+    },
+    {
+      "key": "contact-brand",
+      "tag": "strong",
+      "category": "rooftop",
+      "editable": false,
+      "protected": true,
+      "text": "MIDTOWN LOFT & TERRACE"
+    },
+    {
+      "key": "contact-address",
+      "tag": "span",
+      "category": "production",
+      "editable": false,
+      "protected": true,
+      "text": "267 Fifth Ave. Suite 100 New York, NY 10016 USA"
+    },
+    {
+      "key": "contact-email",
+      "tag": "a",
+      "category": "loft",
+      "editable": false,
+      "protected": true,
+      "text": "sales@midtownloft.net"
+    },
+    {
+      "key": "contact-phone",
+      "tag": "a",
+      "category": "contact",
+      "editable": false,
+      "protected": true,
+      "text": "Phone: (212) 537-0117"
+    },
+    {
+      "key": "contact-whatsapp",
+      "tag": "a",
+      "category": "contact",
+      "editable": false,
+      "protected": true,
+      "text": "WhatsApp: +1 (646) 522-8398"
+    },
+    {
+      "key": "contact-hours",
+      "tag": "span",
+      "category": "contact",
+      "editable": false,
+      "protected": true,
+      "text": "M-F: 9:30 - 5:30 (EST)"
+    },
+    {
+      "key": "contact-form-cta",
+      "tag": "button",
+      "category": "contact",
+      "editable": false,
+      "protected": false,
+      "text": "Submit"
+    },
+    {
+      "key": "footer-brand",
+      "tag": "h2",
+      "category": "rooftop",
+      "editable": false,
+      "protected": true,
+      "text": "MIDTOWN LOFT & TERRACE"
+    },
+    {
+      "key": "footer-copy",
+      "tag": "p",
+      "category": "general",
+      "editable": true,
+      "protected": false,
+      "text": "Event Venue Spaces NYC"
+    },
+    {
+      "key": "footer-events-heading",
+      "tag": "h3",
+      "category": "general",
+      "editable": false,
+      "protected": false,
+      "text": "EVENTS"
+    },
+    {
+      "key": "footer-about-heading",
+      "tag": "h3",
+      "category": "general",
+      "editable": false,
+      "protected": false,
+      "text": "ABOUT"
+    },
+    {
+      "key": "footer-visit-heading",
+      "tag": "h3",
+      "category": "general",
+      "editable": false,
+      "protected": false,
+      "text": "VISIT"
+    },
+    {
+      "key": "footer-copyright",
+      "tag": "p",
+      "category": "rooftop",
+      "editable": false,
+      "protected": true,
+      "text": "Midtown Loft & Terrace Event Venue Spaces NYC (c) 2026"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "notes": "Neutral sample competitor profiles for local fairness tests. Replace with real, sourced competitor content before using results as market evidence.",
+  "venues": [
+    {
+      "name": "Venue A",
+      "summary": "A Manhattan rooftop venue for weddings and receptions with skyline views, seated dinners, cocktail events, and flexible outdoor space.",
+      "signals": ["rooftop", "wedding", "manhattan", "skyline", "cocktail"]
+    },
+    {
+      "name": "Venue B",
+      "summary": "A Midtown event space for corporate meetings, product launches, presentations, conferences, and AV-supported receptions near major transit.",
+      "signals": ["corporate", "midtown", "av", "conference", "product launch"]
+    },
+    {
+      "name": "Venue C",
+      "summary": "A private NYC party venue for Sweet Sixteens, mitzvahs, proms, lighting packages, screens, lounge furniture, and social celebrations.",
+      "signals": ["sweet sixteen", "mitzvah", "prom", "lighting", "screens"]
+    },
+    {
+      "name": "Venue D",
+      "summary": "A Manhattan event venue near landmark destinations with skyline views, private events, receptions, and flexible indoor layouts.",
+      "signals": ["manhattan", "landmark", "skyline", "private event", "reception"]
+    }
+  ]
+}
