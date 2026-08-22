@@ -76,6 +76,7 @@ h2 {
 }
 
 .actions,
+.button-row,
 .section-head,
 .two-col,
 .grid {
@@ -124,6 +125,16 @@ h2 {
 }
 
 .section-head span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.button-row {
+  gap: 8px;
+}
+
+.field-note {
+  margin: -4px 0 14px;
   color: var(--muted);
   font-size: 13px;
 }

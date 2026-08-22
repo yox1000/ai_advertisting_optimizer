@@ -76,6 +76,11 @@ export async function evaluateWithProviders({ providerNames, blocks, prompts, co
   return evaluations;
 }
 
+export async function generateProviderText({ providerName, input }) {
+  const provider = resolveProvider(providerName);
+  return callProvider({ provider, input });
+}
+
 export function summarizeProviderRun(evaluations) {
   return summarizeEvaluations(evaluations);
 }

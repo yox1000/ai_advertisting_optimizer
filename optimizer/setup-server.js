@@ -1,10 +1,14 @@
 import { createServer } from "node:http";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { extname, join, resolve } from "node:path";
+import { discoverOptionsFromPrompts } from "./lib/discovery.js";
+import { loadDotEnv } from "./lib/env.js";
 
 const port = Number(process.env.PORT || 8090);
 const root = resolve(".");
 const outputRoot = join(root, "optimizer", "generated-setups");
+
+loadDotEnv();
 
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -17,6 +21,11 @@ const server = createServer(async (req, res) => {
   try {
     if (req.method === "POST" && req.url === "/api/setups") {
       await handleSaveSetup(req, res);
+      return;
+    }
+
+    if (req.method === "POST" && req.url === "/api/discover-options") {
+      await handleDiscoverOptions(req, res);
       return;
     }
 
@@ -74,6 +83,37 @@ async function handleSaveSetup(req, res) {
     files: ["facts.json", "prompt-suite.json", "competitors.json", "setup.json", "run-command.txt"],
     runCommand
   });
+}
+
+async function handleDiscoverOptions(req, res) {
+  const body = await readBody(req);
+  const payload = JSON.parse(body || "{}");
+  const providerNames = (payload.runOptions?.providers || []).filter((provider) => provider !== "local");
+
+  if (!providerNames.length) {
+    sendJson(res, 400, { error: "Select OpenAI or DeepSeek to discover options from real model answers." });
+    return;
+  }
+
+  validatePayload(payload);
+
+  const progress = [];
+  const options = await discoverOptionsFromPrompts({
+    providerNames,
+    prompts: payload.prompts,
+    facts: payload.facts,
+    maxOptions: Number(payload.maxOptions || 12),
+    onProgress: (event) => {
+      progress.push(event);
+      if (event.type === "start") {
+        console.log(`[discover] [${event.completed + 1}/${event.total}] ${event.provider} ${event.promptId}`);
+        return;
+      }
+      console.log(`[discover] [${event.completed}/${event.total}] done ${event.provider} ${event.promptId}: ${event.options.join(", ")}`);
+    }
+  });
+
+  sendJson(res, 200, { ok: true, options, progress });
 }
 
 async function serveStatic(req, res) {

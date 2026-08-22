@@ -33,7 +33,7 @@ npm run optimize:openai
 npm run optimize:real
 ```
 
-`npm run setup` starts a local setup page at `http://localhost:8090/setup.html`. Use it to enter a website URL, target company, five prompts, competitors, factual guardrails, and run settings. Saving from that page creates a timestamped folder under `optimizer/generated-setups/` with:
+`npm run setup` starts a local setup page at `http://localhost:8090/setup.html`. Use it to enter a website URL, target company, five prompts, factual guardrails, and run settings. The Discovered Options section is for the other companies, venues, or products that models mention when answering those same prompts. Use the Discover button with OpenAI or DeepSeek selected, then manually clean up the resulting list if needed. Saving from that page creates a timestamped folder under `optimizer/generated-setups/` with:
 
 - `facts.json`
 - `prompt-suite.json`

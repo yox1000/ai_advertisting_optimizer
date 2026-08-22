@@ -80,6 +80,7 @@ document.querySelector("#addCompetitor").addEventListener("click", () => {
   refreshPreview();
 });
 
+document.querySelector("#discoverOptions").addEventListener("click", discoverOptions);
 document.querySelector("#refreshPreview").addEventListener("click", refreshPreview);
 document.querySelector("#saveSetup").addEventListener("click", saveSetup);
 
@@ -123,10 +124,10 @@ function addCompetitorRow(competitor) {
   row.className = "competitor-row";
   row.innerHTML = `
     <div class="competitor-head">
-      <span>Competitor</span>
+      <span>Option</span>
       <button class="small" type="button" data-remove-competitor>Remove</button>
     </div>
-    <label>Name<input data-field="competitorName" type="text" placeholder="Competitor name" value="${escapeAttr(competitor.name)}"></label>
+    <label>Name<input data-field="competitorName" type="text" placeholder="Company, venue, or product name" value="${escapeAttr(competitor.name)}"></label>
     <label>Summary<textarea data-field="competitorSummary" rows="3" placeholder="Neutral factual summary">${escapeHtml(competitor.summary)}</textarea></label>
   `;
   row.querySelector("[data-remove-competitor]").addEventListener("click", () => {
@@ -135,6 +136,37 @@ function addCompetitorRow(competitor) {
     refreshPreview();
   });
   competitorList.append(row);
+}
+
+async function discoverOptions() {
+  try {
+    const payload = buildPayload();
+    validatePayload(payload);
+    const realProviders = payload.runOptions.providers.filter((provider) => provider !== "local");
+
+    if (!realProviders.length) {
+      throw new Error("Select OpenAI or DeepSeek in Providers before discovering options.");
+    }
+
+    setStatus(`Discovering options from ${realProviders.join(", ")}...`, "");
+
+    const response = await fetch("/api/discover-options", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+
+    if (!response.ok) throw new Error(result.error || "Discovery failed.");
+    if (!result.options.length) throw new Error("No options were discovered from the prompt answers.");
+
+    renderCompetitorRows(result.options);
+    persistDraft();
+    refreshPreview();
+    setStatus(`Discovered ${result.options.length} options from model answers.`, "ok");
+  } catch (error) {
+    setStatus(error.message, "warn");
+  }
 }
 
 async function saveSetup() {
@@ -230,7 +262,7 @@ function buildPayload() {
       }
     },
     competitors: {
-      notes: "Generated from the local setup page. Use neutral, factual competitor summaries.",
+      notes: "Generated from the local setup page. These comparison options should come from model answers to the configured prompts, with manual edits only for cleanup.",
       companies: competitors
     },
     runOptions: {
