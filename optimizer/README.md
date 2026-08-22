@@ -14,6 +14,8 @@ It separates three test modes:
 npm run extract:content
 npm run optimize
 npm run optimize -- --iterations=5
+npm run optimize -- --providers=openai --iterations=1
+npm run optimize -- --providers=openai,deepseek --iterations=1
 ```
 
 `npm run optimize` creates:
@@ -28,13 +30,42 @@ The harness does not overwrite `index.html`. A human should inspect the accepted
 
 ## Current Model Behavior
 
-The first implementation uses deterministic local model simulators:
+By default, the harness uses deterministic local model simulators:
 
 - `local-balanced`
 - `local-event-planner`
 - `local-skeptic`
 
-These are not real public AI products. They are repeatable scoring stand-ins for local iteration. Real model adapters can be added behind the same three-mode flow once API access is available.
+These are not real public AI products. They are repeatable scoring stand-ins for local iteration.
+
+For real model calls, create a local `.env` file from `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Then fill in:
+
+```bash
+OPENAI_API_KEY=...
+DEEPSEEK_API_KEY=...
+```
+
+Do not commit `.env`. It is ignored by git.
+
+Run OpenAI only:
+
+```bash
+npm run optimize -- --providers=openai --iterations=1
+```
+
+Run OpenAI and DeepSeek:
+
+```bash
+npm run optimize -- --providers=openai,deepseek --iterations=1
+```
+
+OpenAI uses the Responses API. DeepSeek uses its OpenAI-compatible chat completions endpoint.
 
 ## Guardrails
 

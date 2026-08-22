@@ -1,0 +1,198 @@
+import { pageTextFromBlocks } from "./html-content.js";
+import { requireEnv } from "./env.js";
+import { resultFromModelResponse, scoreResult, summarizeEvaluations } from "./evaluator.js";
+
+const PROVIDERS = {
+  openai: {
+    env: "OPENAI_API_KEY",
+    modelEnv: "OPENAI_MODEL",
+    defaultModel: "gpt-5.6",
+    kind: "responses",
+    url: "https://api.openai.com/v1/responses"
+  },
+  deepseek: {
+    env: "DEEPSEEK_API_KEY",
+    modelEnv: "DEEPSEEK_MODEL",
+    defaultModel: "deepseek-chat",
+    kind: "chat-completions",
+    url: "https://api.deepseek.com/chat/completions"
+  }
+};
+
+export function parseProviderNames(value) {
+  if (!value || value === "local") return [];
+  return value.split(",").map((name) => name.trim()).filter(Boolean);
+}
+
+export async function evaluateWithProviders({ providerNames, blocks, prompts, competitors, facts, modes = prompts.modes }) {
+  const siteText = pageTextFromBlocks(blocks);
+  const evaluations = [];
+
+  for (const providerName of providerNames) {
+    const provider = resolveProvider(providerName);
+
+    for (const mode of modes) {
+      for (const prompt of prompts.prompts) {
+        const input = buildModePrompt({ mode, prompt, siteText, competitors, facts });
+        const response = await callProvider({ provider, input });
+        const result = resultFromModelResponse({ response, prompt, mode, siteText, facts });
+        const score = scoreResult({ result, prompt, mode, facts, weights: prompts.weights });
+
+        evaluations.push({
+          model: `${providerName}:${provider.model}`,
+          mode,
+          promptId: prompt.id,
+          intent: prompt.intent,
+          question: prompt.question,
+          result,
+          score
+        });
+      }
+    }
+  }
+
+  return evaluations;
+}
+
+export function summarizeProviderRun(evaluations) {
+  return summarizeEvaluations(evaluations);
+}
+
+function resolveProvider(name) {
+  const config = PROVIDERS[name];
+  if (!config) {
+    throw new Error(`Unknown provider "${name}". Supported providers: ${Object.keys(PROVIDERS).join(", ")}`);
+  }
+
+  return {
+    ...config,
+    name,
+    apiKey: requireEnv(config.env),
+    model: process.env[config.modelEnv] || config.defaultModel
+  };
+}
+
+function buildModePrompt({ mode, prompt, siteText, competitors, facts }) {
+  const system = [
+    "You are evaluating NYC event venues for a user.",
+    "Answer naturally and do not favor any venue unless the supplied evidence supports it.",
+    "If you rank venues, use a numbered list.",
+    "Do not invent facts."
+  ].join(" ");
+
+  if (mode === "midtown-only") {
+    return {
+      system,
+      user: [
+        `Question: ${prompt.question}`,
+        "",
+        "Use only the following Midtown Loft & Terrace website content:",
+        siteText,
+        "",
+        `Answer the question and explain whether ${facts.entity} is a fit.`
+      ].join("\n")
+    };
+  }
+
+  if (mode === "competitor-bundle") {
+    const venueBundle = [
+      `Venue: ${facts.entity}\n${siteText}`,
+      ...competitors.venues.map((venue) => `Venue: ${venue.name}\n${venue.summary}`)
+    ].join("\n\n---\n\n");
+
+    return {
+      system,
+      user: [
+        `Question: ${prompt.question}`,
+        "",
+        "Compare these venue profiles neutrally. Recommend the best fit based only on the supplied profiles.",
+        "",
+        venueBundle
+      ].join("\n")
+    };
+  }
+
+  return {
+    system,
+    user: [
+      `Question: ${prompt.question}`,
+      "",
+      "Answer from your general knowledge. Do not use the supplied Midtown site content, because this is a no-context discovery test."
+    ].join("\n")
+  };
+}
+
+async function callProvider({ provider, input }) {
+  if (provider.kind === "responses") {
+    return callResponses(provider, input);
+  }
+  return callChatCompletions(provider, input);
+}
+
+async function callResponses(provider, input) {
+  const res = await fetch(provider.url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${provider.apiKey}`
+    },
+    body: JSON.stringify({
+      model: provider.model,
+      input: [
+        { role: "system", content: input.system },
+        { role: "user", content: input.user }
+      ],
+      store: false
+    })
+  });
+
+  const data = await parseApiResponse(res);
+  return data.output_text || extractResponsesText(data);
+}
+
+async function callChatCompletions(provider, input) {
+  const res = await fetch(provider.url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${provider.apiKey}`
+    },
+    body: JSON.stringify({
+      model: provider.model,
+      messages: [
+        { role: "system", content: input.system },
+        { role: "user", content: input.user }
+      ],
+      temperature: 0.2
+    })
+  });
+
+  const data = await parseApiResponse(res);
+  return data.choices?.[0]?.message?.content || "";
+}
+
+async function parseApiResponse(res) {
+  const text = await res.text();
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(`Provider returned non-JSON response (${res.status}): ${text.slice(0, 500)}`);
+  }
+
+  if (!res.ok) {
+    const message = data.error?.message || JSON.stringify(data).slice(0, 500);
+    throw new Error(`Provider request failed (${res.status}): ${message}`);
+  }
+
+  return data;
+}
+
+function extractResponsesText(data) {
+  return (data.output || [])
+    .flatMap((item) => item.content || [])
+    .filter((content) => content.type === "output_text" || content.text)
+    .map((content) => content.text)
+    .join("\n");
+}

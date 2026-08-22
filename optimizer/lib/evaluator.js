@@ -157,7 +157,7 @@ function answerNoContext({ model, prompt, competitors, facts }) {
   };
 }
 
-function scoreResult({ result, prompt, mode, facts, weights }) {
+export function scoreResult({ result, prompt, mode, facts, weights }) {
   const mentioned = result.mentioned ? weights.mention : 0;
   const rank = rankScore(result.rank, weights.rank);
   const fit = fitScore(result, prompt, weights.fit);
@@ -169,6 +169,21 @@ function scoreResult({ result, prompt, mode, facts, weights }) {
     total,
     parts: { mention: mentioned, rank, fit, facts: factsScore, risk },
     flags: result.riskFlags
+  };
+}
+
+export function resultFromModelResponse({ response, prompt, mode, siteText, facts }) {
+  const rank = parseEntityRank(response, facts);
+  const mentioned = rank !== null || entityMentioned(response, facts);
+
+  return {
+    response,
+    rankings: rank ? [{ name: facts.entity, rank }] : [],
+    mentioned,
+    rank,
+    missingSignals: mode === "no-context" ? [] : missingRequiredSignals(siteText, prompt.requiredSignals),
+    factsFound: factCoverage(`${response}\n${siteText}`, facts),
+    riskFlags: riskFlags(response, facts)
   };
 }
 
@@ -260,4 +275,23 @@ function groupAverage(evaluations, key) {
 function average(values) {
   if (!values.length) return 0;
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+function entityMentioned(text, facts) {
+  const lower = text.toLowerCase();
+  return [facts.entity, ...(facts.aliases || [])].some((name) => lower.includes(name.toLowerCase()));
+}
+
+function parseEntityRank(text, facts) {
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const aliases = [facts.entity, ...(facts.aliases || [])].map((name) => name.toLowerCase());
+
+  for (const line of lines) {
+    const ranked = line.match(/^(\d+)[.)\s-]+/);
+    if (!ranked) continue;
+    const lower = line.toLowerCase();
+    if (aliases.some((name) => lower.includes(name))) return Number(ranked[1]);
+  }
+
+  return entityMentioned(text, facts) ? 1 : null;
 }

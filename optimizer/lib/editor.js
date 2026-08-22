@@ -1,3 +1,5 @@
+import { decodeEntities, normalizeText, stripTags } from "./html-content.js";
+
 const INTENT_EDIT_TARGETS = {
   wedding: ["wedding-title", "wedding-copy-1", "wedding-copy-2", "terrace-copy-4", "home-terrace-summary"],
   corporate: ["corporate-title", "corporate-copy-1", "corporate-copy-2", "production-copy", "loft-copy-3"],
@@ -153,4 +155,3 @@ function rankedWeakIntents(evaluations) {
     .sort((a, b) => a.average - b.average)
     .map((entry) => entry.intent);
 }
-import { decodeEntities, normalizeText, stripTags } from "./html-content.js";

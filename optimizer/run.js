@@ -3,13 +3,19 @@ import { join } from "node:path";
 import prompts from "../prompt-suite.json" with { type: "json" };
 import competitors from "../competitors.json" with { type: "json" };
 import facts from "../facts.json" with { type: "json" };
+import { loadDotEnv } from "./lib/env.js";
 import { applyTextEdits, buildContentMap, extractAiBlocks, readHtml } from "./lib/html-content.js";
 import { evaluateAll, summarizeEvaluations } from "./lib/evaluator.js";
 import { generateCandidateEditSets, validateCandidate } from "./lib/editor.js";
+import { evaluateWithProviders, parseProviderNames } from "./lib/model-providers.js";
 
 const runId = new Date().toISOString().replace(/[:.]/g, "-");
 const runDir = join("optimizer", "runs", runId);
 const maxIterations = Number(getArgValue("--iterations") || 3);
+const providerNames = parseProviderNames(getArgValue("--providers") || "local");
+const usingRealProviders = providerNames.length > 0;
+
+loadDotEnv();
 
 await mkdir(runDir, { recursive: true });
 
@@ -26,7 +32,7 @@ const iterations = [];
 
 for (let iteration = 1; iteration <= maxIterations; iteration += 1) {
   const workingBlocks = extractAiBlocks(workingHtml);
-  const baselineEvaluations = evaluateAll({ blocks: workingBlocks, prompts, competitors, facts });
+  const baselineEvaluations = await evaluateCurrent({ blocks: workingBlocks });
   const baselineSummary = summarizeEvaluations(baselineEvaluations);
   const candidateSets = generateCandidateEditSets({ evaluations: baselineEvaluations, blocks: workingBlocks, facts });
   const candidateReports = [];
@@ -36,7 +42,7 @@ for (let iteration = 1; iteration <= maxIterations; iteration += 1) {
     const validation = validateCandidate({ html: candidateHtml, facts, edits: candidate.edits });
     const candidateBlocks = extractAiBlocks(candidateHtml);
     const evaluations = validation.valid
-      ? evaluateAll({ blocks: candidateBlocks, prompts, competitors, facts })
+      ? await evaluateCurrent({ blocks: candidateBlocks })
       : [];
     const summary = validation.valid ? summarizeEvaluations(evaluations) : null;
     const decision = decideCandidate({ baselineSummary, summary, validation });
@@ -87,7 +93,8 @@ const report = {
   generatedAt: new Date().toISOString(),
   target: facts.entity,
   modes: prompts.modes,
-  models: ["local-balanced", "local-event-planner", "local-skeptic"],
+  providers: usingRealProviders ? providerNames : ["local"],
+  models: usingRealProviders ? providerNames : ["local-balanced", "local-event-planner", "local-skeptic"],
   maxIterations,
   initialBaseline: iterations[0]?.baseline || null,
   finalSummary,
@@ -100,6 +107,7 @@ await writeFile(join(runDir, "report.md"), renderMarkdown(report), "utf8");
 console.log(`Run: ${runId}`);
 console.log(`Initial overall: ${report.initialBaseline?.overall ?? "n/a"}`);
 console.log(`Initial by mode: ${formatModeScores(report.initialBaseline?.byMode || {})}`);
+console.log(`Providers: ${report.providers.join(", ")}`);
 console.log(`Iterations completed: ${iterations.length}`);
 console.log(`Accepted candidates: ${iterations.filter((iteration) => iteration.accepted).length}`);
 console.log(`Final overall: ${finalSummary?.overall ?? "n/a"}`);
@@ -132,6 +140,13 @@ function decideCandidate({ baselineSummary, summary, validation }) {
   };
 }
 
+async function evaluateCurrent({ blocks }) {
+  if (usingRealProviders) {
+    return evaluateWithProviders({ providerNames, blocks, prompts, competitors, facts });
+  }
+  return evaluateAll({ blocks, prompts, competitors, facts });
+}
+
 function assertUniqueKeys(blocks) {
   const seen = new Set();
   const duplicates = [];
@@ -155,6 +170,8 @@ function renderMarkdown(report) {
 Target: ${report.target}
 
 Modes: ${report.modes.join(", ")}
+
+Providers: ${report.providers.join(", ")}
 
 Max iterations: ${report.maxIterations}
 
