@@ -33,7 +33,7 @@ npm run optimize:openai
 npm run optimize:real
 ```
 
-`npm run setup` starts a local setup page at `http://localhost:8090/setup.html`. Use it to enter a website URL, target company, five prompts, factual guardrails, and run settings. The Discovered Options section is for the other companies, venues, or products that models mention when answering those same prompts. Use the Discover button with OpenAI or DeepSeek selected, then manually clean up the resulting list if needed. Saving from that page creates a timestamped folder under `optimizer/generated-setups/` with:
+`npm run setup` starts a local setup page at `http://localhost:8090/setup.html`. Use it to enter a website URL, target company, one or more prompts, factual guardrails, and run settings. The Discovered Options section is for the other companies, venues, or products that models mention when answering those same prompts. Use the Discover button with OpenAI or DeepSeek selected, then manually remove bad options or add missing ones if needed. Saving from that page creates a timestamped folder under `optimizer/generated-setups/` with:
 
 - `facts.json`
 - `prompt-suite.json`
@@ -104,7 +104,7 @@ Run one recursive candidate-edit pass with OpenAI and DeepSeek:
 npm run optimize:real
 ```
 
-Real provider runs print progress for each model call. A normal `baseline:real` run currently performs 30 calls: two providers, three modes, and five prompts. A normal `optimize:real` run performs those 30 baseline calls plus 30 more calls for one candidate edit path. To test more candidate paths:
+Real provider runs print progress for each model call. The number of calls is providers multiplied by modes multiplied by prompts. With two providers, three modes, and five prompts, `baseline:real` performs 30 calls. A normal `optimize:real` run performs the same baseline calls again for each candidate edit path. To test more candidate paths:
 
 ```bash
 npm run optimize -- --providers=openai,deepseek --iterations=1 --max-candidates=3

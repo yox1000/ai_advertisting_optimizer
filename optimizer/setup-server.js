@@ -156,8 +156,12 @@ function relativePath(dir, fileName) {
 function validatePayload(payload) {
   if (!payload.sourceUrl) throw new Error("Website URL is required.");
   if (!payload.facts?.entity) throw new Error("Target company name is required.");
-  if (!Array.isArray(payload.prompts?.prompts) || payload.prompts.prompts.length !== 5) {
-    throw new Error("Exactly five prompts are required.");
+  if (!Array.isArray(payload.prompts?.prompts) || payload.prompts.prompts.length < 1) {
+    throw new Error("At least one prompt is required.");
+  }
+  const incomplete = payload.prompts.prompts.find((prompt) => !prompt.intent || !prompt.question);
+  if (incomplete) {
+    throw new Error("Each prompt needs an intent and a question.");
   }
   if (!Array.isArray(payload.runOptions?.providers)) throw new Error("Providers are required.");
 }

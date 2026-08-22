@@ -6,7 +6,6 @@ const commandPreview = document.querySelector("#commandPreview");
 const jsonPreview = document.querySelector("#jsonPreview");
 const providerInputs = [...document.querySelectorAll("input[name='provider']")];
 
-const promptCount = 5;
 const storageKey = "ai-optimizer-setup-draft";
 
 const blankPrompt = (index) => ({
@@ -63,7 +62,7 @@ const example = {
   ]
 };
 
-renderPromptRows(Array.from({ length: promptCount }, (_, index) => blankPrompt(index)));
+renderPromptRows([blankPrompt(0)]);
 renderCompetitorRows([{ name: "", summary: "" }, { name: "", summary: "" }]);
 restoreDraft();
 refreshPreview();
@@ -76,6 +75,12 @@ document.querySelector("#loadExample").addEventListener("click", () => {
 
 document.querySelector("#addCompetitor").addEventListener("click", () => {
   addCompetitorRow({ name: "", summary: "" });
+  persistDraft();
+  refreshPreview();
+});
+
+document.querySelector("#addPrompt").addEventListener("click", () => {
+  addPromptRow(blankPrompt(promptList.querySelectorAll(".prompt-row").length));
   persistDraft();
   refreshPreview();
 });
@@ -98,20 +103,34 @@ document.addEventListener("change", (event) => {
 
 function renderPromptRows(prompts) {
   promptList.innerHTML = "";
-  prompts.slice(0, promptCount).forEach((prompt, index) => {
-    const row = document.createElement("section");
-    row.className = "prompt-row";
-    row.dataset.promptIndex = String(index);
-    row.innerHTML = `
-      <div class="prompt-head"><span>Prompt ${index + 1}</span></div>
-      <div class="prompt-fields">
-        <label>Intent<input data-field="intent" type="text" placeholder="wedding" value="${escapeAttr(prompt.intent)}"></label>
-        <label>Question<input data-field="question" type="text" placeholder="What should the model be asked?" value="${escapeAttr(prompt.question)}"></label>
-      </div>
-      <label>Required signals<input data-field="requiredSignals" type="text" placeholder="comma separated facts or terms" value="${escapeAttr(prompt.requiredSignals)}"></label>
-    `;
-    promptList.append(row);
+  const visiblePrompts = prompts.length ? prompts : [blankPrompt(0)];
+  visiblePrompts.forEach(addPromptRow);
+  renumberPromptRows();
+}
+
+function addPromptRow(prompt) {
+  const row = document.createElement("section");
+  row.className = "prompt-row";
+  row.innerHTML = `
+    <div class="prompt-head">
+      <span>Prompt</span>
+      <button class="small" type="button" data-remove-prompt>Remove</button>
+    </div>
+    <div class="prompt-fields">
+      <label>Intent<input data-field="intent" type="text" placeholder="wedding" value="${escapeAttr(prompt.intent)}"></label>
+      <label>Question<input data-field="question" type="text" placeholder="What should the model be asked?" value="${escapeAttr(prompt.question)}"></label>
+    </div>
+    <label>Required signals<input data-field="requiredSignals" type="text" placeholder="comma separated facts or terms" value="${escapeAttr(prompt.requiredSignals)}"></label>
+  `;
+  row.querySelector("[data-remove-prompt]").addEventListener("click", () => {
+    row.remove();
+    if (!promptList.querySelector(".prompt-row")) addPromptRow(blankPrompt(0));
+    renumberPromptRows();
+    persistDraft();
+    refreshPreview();
   });
+  promptList.append(row);
+  renumberPromptRows();
 }
 
 function renderCompetitorRows(competitors) {
@@ -278,6 +297,7 @@ function buildPayload() {
 function validatePayload(payload) {
   if (!payload.sourceUrl) throw new Error("Website URL is required.");
   if (!payload.facts.entity) throw new Error("Target company is required.");
+  if (!payload.prompts.prompts.length) throw new Error("Add at least one prompt.");
   const incomplete = payload.prompts.prompts.find((prompt) => !prompt.intent || !prompt.question);
   if (incomplete) throw new Error("Each prompt needs an intent and a question.");
   if (!payload.prompts.modes.length) throw new Error("Select at least one mode.");
@@ -298,15 +318,19 @@ function fillForm(data) {
 }
 
 function readPrompts() {
-  return [...promptList.querySelectorAll(".prompt-row")].map((row, index) => {
-    const intent = fieldValue(row, "intent").trim();
-    return {
-      id: `${slugify(intent || "prompt")}-${index + 1}`,
-      intent,
-      question: fieldValue(row, "question").trim(),
-      requiredSignals: splitList(fieldValue(row, "requiredSignals"))
-    };
-  });
+  return [...promptList.querySelectorAll(".prompt-row")]
+    .map((row, index) => {
+      const intent = fieldValue(row, "intent").trim();
+      const question = fieldValue(row, "question").trim();
+      const requiredSignals = splitList(fieldValue(row, "requiredSignals"));
+      return {
+        id: `${slugify(intent || "prompt")}-${index + 1}`,
+        intent,
+        question,
+        requiredSignals
+      };
+    })
+    .filter((prompt) => prompt.intent || prompt.question || prompt.requiredSignals.length);
 }
 
 function readCompetitors() {
@@ -391,6 +415,12 @@ function readDraft() {
     })),
     competitors: readCompetitors()
   };
+}
+
+function renumberPromptRows() {
+  [...promptList.querySelectorAll(".prompt-row")].forEach((row, index) => {
+    row.querySelector(".prompt-head span").textContent = `Prompt ${index + 1}`;
+  });
 }
 
 function parseKeyValueLines(text) {
