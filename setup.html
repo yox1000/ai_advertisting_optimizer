@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI Recommendation Optimizer Setup</title>
+    <link rel="stylesheet" href="setup.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Local setup</p>
+          <h1>AI Recommendation Optimizer</h1>
+        </div>
+        <div class="actions">
+          <button class="secondary" type="button" id="loadExample">Load Example</button>
+          <button class="primary" type="button" id="saveSetup">Save Setup</button>
+        </div>
+      </header>
+
+      <section class="grid">
+        <form class="panel form-panel" id="setupForm">
+          <section class="form-section">
+            <div class="section-head">
+              <h2>Website</h2>
+            </div>
+            <label>
+              Website URL
+              <input id="sourceUrl" name="sourceUrl" type="url" placeholder="https://example.com" required>
+            </label>
+            <div class="two-col">
+              <label>
+                Target company
+                <input id="entity" name="entity" type="text" placeholder="Company or venue name" required>
+              </label>
+              <label>
+                Market
+                <input id="market" name="market" type="text" placeholder="NYC event venues">
+              </label>
+            </div>
+            <label>
+              Aliases
+              <input id="aliases" name="aliases" type="text" placeholder="Short names, alternate spellings">
+            </label>
+            <label>
+              Default context
+              <textarea id="defaultContext" name="defaultContext" rows="3" placeholder="One factual sentence about what this company is and where it operates."></textarea>
+            </label>
+          </section>
+
+          <section class="form-section">
+            <div class="section-head">
+              <h2>Prompts</h2>
+              <span>5 required</span>
+            </div>
+            <div class="prompt-list" id="promptList"></div>
+          </section>
+
+          <section class="form-section">
+            <div class="section-head">
+              <h2>Competitors</h2>
+              <button class="small" type="button" id="addCompetitor">Add</button>
+            </div>
+            <div class="competitor-list" id="competitorList"></div>
+          </section>
+
+          <section class="form-section">
+            <div class="section-head">
+              <h2>Guardrails</h2>
+            </div>
+            <label>
+              Protected facts
+              <textarea id="protectedFacts" rows="5" placeholder="address: 123 Main St&#10;phone: (555) 123-4567&#10;capacity: 150"></textarea>
+            </label>
+            <label>
+              Blocked claims
+              <textarea id="blockedClaims" rows="4" placeholder="guaranteed best&#10;officially ranked number one&#10;cheapest"></textarea>
+            </label>
+          </section>
+        </form>
+
+        <aside class="panel side-panel">
+          <section class="form-section compact">
+            <div class="section-head">
+              <h2>Run</h2>
+            </div>
+            <fieldset>
+              <legend>Providers</legend>
+              <label class="check-row"><input type="checkbox" name="provider" value="local" checked> Local simulator</label>
+              <label class="check-row"><input type="checkbox" name="provider" value="openai"> OpenAI</label>
+              <label class="check-row"><input type="checkbox" name="provider" value="deepseek"> DeepSeek</label>
+            </fieldset>
+            <fieldset>
+              <legend>Modes</legend>
+              <label class="check-row"><input type="checkbox" name="mode" value="no-context" checked> No context</label>
+              <label class="check-row"><input type="checkbox" name="mode" value="competitor-bundle" checked> Competitor bundle</label>
+              <label class="check-row"><input type="checkbox" name="mode" value="target-only" checked> Target only</label>
+            </fieldset>
+            <label>
+              Run type
+              <select id="runType">
+                <option value="baseline">Baseline report</option>
+                <option value="recursive">Recursive edit pass</option>
+              </select>
+            </label>
+            <div class="two-col tight">
+              <label>
+                Iterations
+                <input id="iterations" type="number" min="1" max="10" value="1">
+              </label>
+              <label>
+                Candidates
+                <input id="maxCandidates" type="number" min="1" max="10" value="1">
+              </label>
+            </div>
+          </section>
+
+          <section class="form-section compact">
+            <div class="section-head">
+              <h2>Output</h2>
+              <button class="small" type="button" id="refreshPreview">Refresh</button>
+            </div>
+            <pre class="status" id="status">Not saved yet.</pre>
+            <label>
+              Run command
+              <textarea class="mono" id="commandPreview" rows="5" readonly></textarea>
+            </label>
+            <label>
+              Config preview
+              <textarea class="mono" id="jsonPreview" rows="18" readonly></textarea>
+            </label>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="setup.js"></script>
+  </body>
+</html>

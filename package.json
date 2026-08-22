@@ -10,6 +10,7 @@
     "baseline:openai": "node optimizer/run.js --providers=openai --iterations=1 --evaluate-candidates=false",
     "baseline:real": "node optimizer/run.js --providers=openai,deepseek --iterations=1 --evaluate-candidates=false",
     "extract:content": "node optimizer/extract-content.js",
+    "setup": "node optimizer/setup-server.js",
     "serve": "python3 -m http.server 8080"
   }
 }

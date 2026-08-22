@@ -26,11 +26,20 @@ See `optimizer/example-facts.generic.json` for a generic facts template.
 npm run extract:content
 npm run optimize
 npm run optimize -- --iterations=5
+npm run setup
 npm run baseline:openai
 npm run baseline:real
 npm run optimize:openai
 npm run optimize:real
 ```
+
+`npm run setup` starts a local setup page at `http://localhost:8090/setup.html`. Use it to enter a website URL, target company, five prompts, competitors, factual guardrails, and run settings. Saving from that page creates a timestamped folder under `optimizer/generated-setups/` with:
+
+- `facts.json`
+- `prompt-suite.json`
+- `competitors.json`
+- `setup.json`
+- `run-command.txt`
 
 `npm run optimize` creates:
 
@@ -41,6 +50,8 @@ npm run optimize:real
 - `optimizer/runs/<timestamp>/best-candidate.html`: only written when at least one candidate is accepted.
 
 The harness does not overwrite `index.html`. A human should inspect the accepted candidate before applying it to the live/static page.
+
+Generated setup folders are ignored by git.
 
 ## Current Model Behavior
 

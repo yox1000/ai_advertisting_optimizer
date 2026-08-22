@@ -1,8 +1,5 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import prompts from "../prompt-suite.json" with { type: "json" };
-import competitors from "../competitors.json" with { type: "json" };
-import facts from "../facts.json" with { type: "json" };
 import { loadDotEnv } from "./lib/env.js";
 import { applyTextEdits, buildContentMap, extractAiBlocks, readHtml } from "./lib/html-content.js";
 import { evaluateAll, summarizeEvaluations } from "./lib/evaluator.js";
@@ -11,6 +8,10 @@ import { evaluateWithProviders, parseProviderNames } from "./lib/model-providers
 
 const runId = new Date().toISOString().replace(/[:.]/g, "-");
 const runDir = join("optimizer", "runs", runId);
+const htmlPath = getArgValue("--html") || "index.html";
+const factsPath = getArgValue("--facts") || "facts.json";
+const promptsPath = getArgValue("--prompts") || "prompt-suite.json";
+const competitorsPath = getArgValue("--competitors") || "competitors.json";
 const maxIterations = Number(getArgValue("--iterations") || 3);
 const providerNames = parseProviderNames(getArgValue("--providers") || "local");
 const usingRealProviders = providerNames.length > 0;
@@ -19,9 +20,14 @@ const maxCandidates = Number(getArgValue("--max-candidates") || 3);
 
 loadDotEnv();
 
+const facts = await readJson(factsPath);
+const prompts = await readJson(promptsPath);
+const competitors = await readJson(competitorsPath);
+const sourceUrl = getArgValue("--source-url") || facts.sourceUrl || null;
+
 await mkdir(runDir, { recursive: true });
 
-const initialHtml = await readHtml("index.html");
+const initialHtml = await readHtml(htmlPath);
 const initialBlocks = extractAiBlocks(initialHtml);
 assertUniqueKeys(initialBlocks);
 
@@ -105,6 +111,11 @@ const report = {
   runId,
   generatedAt: new Date().toISOString(),
   target: facts.entity,
+  sourceUrl,
+  htmlPath,
+  factsPath,
+  promptsPath,
+  competitorsPath,
   modes: prompts.modes,
   providers: usingRealProviders ? providerNames : ["local"],
   models: usingRealProviders ? providerNames : ["local-balanced", "local-event-planner", "local-skeptic"],
@@ -120,6 +131,8 @@ await writeFile(join(runDir, "report.json"), `${JSON.stringify(report, null, 2)}
 await writeFile(join(runDir, "report.md"), renderMarkdown(report), "utf8");
 
 console.log(`Run: ${runId}`);
+console.log(`Target: ${facts.entity}`);
+if (sourceUrl) console.log(`Source URL: ${sourceUrl}`);
 console.log(`Initial overall: ${report.initialBaseline?.overall ?? "n/a"}`);
 console.log(`Initial by mode: ${formatModeScores(report.initialBaseline?.byMode || {})}`);
 console.log(`Providers: ${report.providers.join(", ")}`);
@@ -190,6 +203,8 @@ function renderMarkdown(report) {
 
 Target: ${report.target}
 
+${report.sourceUrl ? `Source URL: ${report.sourceUrl}\n` : ""}
+
 Modes: ${report.modes.join(", ")}
 
 Providers: ${report.providers.join(", ")}
@@ -256,6 +271,10 @@ function getArgValue(name) {
   const exact = process.argv.find((arg) => arg.startsWith(`${name}=`));
   if (!exact) return null;
   return exact.slice(name.length + 1);
+}
+
+async function readJson(filePath) {
+  return JSON.parse(await readFile(filePath, "utf8"));
 }
 
 function logProviderProgress(event, phase) {
