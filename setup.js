@@ -6,7 +6,8 @@ const commandPreview = document.querySelector("#commandPreview");
 const jsonPreview = document.querySelector("#jsonPreview");
 const providerInputs = [...document.querySelectorAll("input[name='provider']")];
 
-const storageKey = "ai-optimizer-setup-draft";
+const defaultPromptCount = 5;
+const storageKey = "ai-optimizer-setup-draft-v2";
 
 const blankPrompt = (index) => ({
   intent: "",
@@ -62,7 +63,7 @@ const example = {
   ]
 };
 
-renderPromptRows([blankPrompt(0)]);
+renderPromptRows(Array.from({ length: defaultPromptCount }, (_, index) => blankPrompt(index)));
 renderCompetitorRows([{ name: "", summary: "" }, { name: "", summary: "" }]);
 restoreDraft();
 refreshPreview();
