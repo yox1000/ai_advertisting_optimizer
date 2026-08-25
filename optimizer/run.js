@@ -17,6 +17,8 @@ const providerNames = parseProviderNames(getArgValue("--providers") || "local");
 const usingRealProviders = providerNames.length > 0;
 const evaluateCandidates = getArgValue("--evaluate-candidates") !== "false";
 const maxCandidates = Number(getArgValue("--max-candidates") || 3);
+const maxIntents = Number(getArgValue("--max-intents") || maxCandidates);
+const candidatesPerIntent = Number(getArgValue("--candidates-per-intent") || 1);
 
 loadDotEnv();
 
@@ -52,7 +54,14 @@ for (let iteration = 1; iteration <= maxIterations; iteration += 1) {
     finalSummary = baselineSummary;
     break;
   }
-  const candidateSets = generateCandidateEditSets({ evaluations: baselineEvaluations, blocks: workingBlocks, facts, maxCandidates });
+  const candidateSets = generateCandidateEditSets({
+    evaluations: baselineEvaluations,
+    blocks: workingBlocks,
+    facts,
+    maxCandidates,
+    maxIntents,
+    candidatesPerIntent
+  });
   const candidateReports = [];
 
   for (const candidate of candidateSets) {
@@ -122,6 +131,8 @@ const report = {
   maxIterations,
   evaluateCandidates,
   maxCandidates,
+  maxIntents,
+  candidatesPerIntent,
   initialBaseline: iterations[0]?.baseline || null,
   finalSummary,
   iterations
@@ -138,6 +149,8 @@ console.log(`Initial by mode: ${formatModeScores(report.initialBaseline?.byMode 
 console.log(`Providers: ${report.providers.join(", ")}`);
 console.log(`Evaluate candidates: ${evaluateCandidates ? "yes" : "no"}`);
 console.log(`Max candidates: ${maxCandidates}`);
+console.log(`Max intents: ${maxIntents}`);
+console.log(`Candidates per intent: ${candidatesPerIntent}`);
 console.log(`Iterations completed: ${iterations.length}`);
 console.log(`Accepted candidates: ${iterations.filter((iteration) => iteration.accepted).length}`);
 console.log(`Final overall: ${finalSummary?.overall ?? "n/a"}`);
@@ -214,6 +227,10 @@ Max iterations: ${report.maxIterations}
 Evaluate candidates: ${report.evaluateCandidates ? "yes" : "no"}
 
 Max candidates: ${report.maxCandidates}
+
+Max intents: ${report.maxIntents}
+
+Candidates per intent: ${report.candidatesPerIntent}
 
 ## Initial Baseline
 

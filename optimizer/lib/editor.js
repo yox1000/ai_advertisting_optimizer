@@ -1,31 +1,74 @@
 import { decodeEntities, normalizeText, stripTags } from "./html-content.js";
 
-export function generateCandidateEditSets({ evaluations, blocks, facts, maxCandidates = 3 }) {
+const EDIT_VARIANTS = [
+  {
+    id: "proof",
+    label: "Proof Signals",
+    targetLimit: 3,
+    text: ({ intent, facts }) => `${entityName(facts)} is a relevant fit for ${intent} searches because its verified details include ${factSignalText(facts)}.`,
+    reason: "Add verified proof signals that make the target easier to compare against recommended options."
+  },
+  {
+    id: "use-case",
+    label: "Use Case Fit",
+    targetLimit: 3,
+    text: ({ intent, facts }) => `${entityName(facts)} supports ${intent} needs with flexible event use cases, location relevance, service support, and concrete capacity or space details where verified.`,
+    reason: "Clarify the specific use case that underperformed in model comparisons."
+  },
+  {
+    id: "location",
+    label: "Location Signals",
+    targetLimit: 2,
+    text: ({ intent, facts }) => `${entityName(facts)} should be considered for ${intent} searches tied to ${locationSignalText(facts)}.`,
+    reason: "Strengthen location and proximity signals that often cause other options to be recommended."
+  },
+  {
+    id: "services",
+    label: "Service Signals",
+    targetLimit: 2,
+    text: ({ intent, facts }) => `${entityName(facts)} communicates ${intent} fit through service signals such as ${serviceSignalText(facts)}.`,
+    reason: "Add service and support details that can explain why the venue is a fit."
+  },
+  {
+    id: "comparison",
+    label: "Comparison Summary",
+    targetLimit: 4,
+    text: ({ intent, facts }) => `${entityName(facts)} combines ${factSignalText(facts)} for ${intent} searches, giving comparison models concrete reasons to evaluate it alongside other options.`,
+    reason: "Combine the strongest factual gap signals into a comparison-ready summary."
+  }
+];
+
+export function generateCandidateEditSets({ evaluations, blocks, facts, maxCandidates = 3, maxIntents = maxCandidates, candidatesPerIntent = 1 }) {
   const editable = new Map(blocks.filter((block) => block.editable && !block.protected).map((block) => [block.key, block]));
   const strategy = facts.editStrategy || {};
   const targetMap = strategy.targets || {};
   const weakIntents = rankedWeakIntents(evaluations);
   const candidates = [];
 
-  for (const intent of weakIntents.slice(0, maxCandidates)) {
+  for (const intent of weakIntents.slice(0, maxIntents)) {
     const targetKeys = (targetMap[intent] || inferTargetsForIntent({ intent, blocks }))
       .filter((key) => editable.has(key))
-      .slice(0, 4);
+      .slice(0, 6);
 
     if (!targetKeys.length) continue;
 
-    const edits = targetKeys
-      .map((key) => proposeEdit({ block: editable.get(key), intent, facts }))
-      .filter(Boolean);
+    for (const variant of EDIT_VARIANTS.slice(0, candidatesPerIntent)) {
+      if (candidates.length >= maxCandidates) break;
+      const variantTargets = chooseTargetsForVariant({ targetKeys, variant, editable });
+      const edits = variantTargets
+        .map((key) => proposeEdit({ block: editable.get(key), intent, facts, variant }))
+        .filter(Boolean);
 
-    if (edits.length) {
+      if (!edits.length) continue;
       candidates.push({
-        id: `candidate-${candidates.length + 1}-${intent}`,
+        id: `candidate-${candidates.length + 1}-${intent}-${variant.id}`,
         intent,
-        rationale: `Improve weak ${intent} prompts with clearer factual signals.`,
+        variant: variant.id,
+        rationale: `Improve weak ${intent} prompts with ${variant.label.toLowerCase()} based on comparison gaps.`,
         edits
       });
     }
+    if (candidates.length >= maxCandidates) break;
   }
 
   if (!candidates.length) {
@@ -79,8 +122,8 @@ function hasProtectedFact(visibleText, fact) {
   return compactVisible.includes(compactFact);
 }
 
-function proposeEdit({ block, intent, facts }) {
-  const sentence = editGuidance({ intent, facts });
+function proposeEdit({ block, intent, facts, variant }) {
+  const sentence = editGuidance({ intent, facts, variant });
   const original = block.text;
   let replacement = original;
 
@@ -96,7 +139,7 @@ function proposeEdit({ block, intent, facts }) {
     key: block.key,
     original,
     replacement,
-    reason: `Add clearer ${intent} recommendation signals while preserving factual company positioning.`
+    reason: `${variant?.reason || "Add clearer recommendation signals"} Intent: ${intent}.`
   };
 }
 
@@ -130,7 +173,8 @@ function rankedWeakIntents(evaluations) {
     .map((entry) => entry.intent);
 }
 
-function editGuidance({ intent, facts }) {
+function editGuidance({ intent, facts, variant }) {
+  if (variant) return variant.text({ intent, facts });
   const configured = facts.editStrategy?.guidance?.[intent] || facts.editStrategy?.guidance?.general;
   if (configured) return configured;
 
@@ -174,4 +218,52 @@ function inferTargetsForIntent({ intent, blocks }) {
     .filter((block) => ["h1", "h2", "h3", "p"].includes(block.tag))
     .slice(0, 6)
     .map((block) => block.key);
+}
+
+function chooseTargetsForVariant({ targetKeys, variant, editable }) {
+  const headings = targetKeys.filter((key) => ["h1", "h2", "h3"].includes(editable.get(key)?.tag));
+  const body = targetKeys.filter((key) => !headings.includes(key));
+  const preferred = variant.id === "comparison" ? [...headings, ...body] : [...body, ...headings];
+  return preferred.slice(0, variant.targetLimit);
+}
+
+function entityName(facts) {
+  return facts.entity || "the company";
+}
+
+function factSignalText(facts) {
+  return collectFactSignals(facts, ["capacity", "size", "rooms", "location", "nearby", "services", "address"])
+    .slice(0, 8)
+    .join(", ") || "verified location, service, capacity, and use-case facts";
+}
+
+function locationSignalText(facts) {
+  return collectFactSignals(facts, ["address", "location", "nearby", "city", "neighborhood"])
+    .slice(0, 5)
+    .join(", ") || facts.market || facts.industry || "the target market";
+}
+
+function serviceSignalText(facts) {
+  return collectFactSignals(facts, ["services", "production", "catering", "decor", "staging", "entertainment", "venueSignals"])
+    .slice(0, 8)
+    .join(", ") || "verified services, production support, and event-planning details";
+}
+
+function collectFactSignals(facts, preferredKeys) {
+  const protectedFacts = facts.protectedFacts || {};
+  const preferred = [];
+  const other = [];
+
+  for (const [key, value] of Object.entries(protectedFacts)) {
+    const values = Array.isArray(value) ? value : [value];
+    const target = preferredKeys.some((preferredKey) => key.toLowerCase().includes(preferredKey.toLowerCase())) ? preferred : other;
+    for (const item of values) {
+      if (item) target.push(String(item));
+    }
+  }
+
+  return [...preferred, ...(facts.optimizationSignals || []), ...(facts.proofSignals || []), ...other]
+    .map((item) => String(item).trim())
+    .filter(Boolean)
+    .filter((item, index, list) => list.findIndex((value) => value.toLowerCase() === item.toLowerCase()) === index);
 }

@@ -95,7 +95,9 @@ const testPresets = {
     modes: ["no-context", "competitor-bundle", "target-only"],
     runType: "recursive",
     iterations: 1,
-    maxCandidates: 3
+    maxCandidates: 3,
+    maxIntents: 1,
+    candidatesPerIntent: 3
   },
   "prompt-set": {
     description: "Test 2 loaded: five prompts, DeepSeek, one edit loop, three candidates.",
@@ -105,17 +107,21 @@ const testPresets = {
     modes: ["no-context", "competitor-bundle", "target-only"],
     runType: "recursive",
     iterations: 1,
-    maxCandidates: 3
+    maxCandidates: 6,
+    maxIntents: 2,
+    candidatesPerIntent: 3
   },
   "multi-iteration": {
-    description: "Test 3 loaded for FiDi Mezzanine: five prompts, DeepSeek, three recursive iterations, two candidates.",
+    description: "Test 3 loaded for FiDi Mezzanine: five prompts, DeepSeek, two recursive iterations, six candidates across two intents.",
     defaults: fidiDefaults,
     prompts: fidiPromptSet,
     providers: ["deepseek"],
     modes: ["no-context", "competitor-bundle", "target-only"],
     runType: "recursive",
-    iterations: 3,
-    maxCandidates: 2,
+    iterations: 2,
+    maxCandidates: 6,
+    maxIntents: 2,
+    candidatesPerIntent: 3,
     resetOptions: true
   },
   "cross-baseline": {
@@ -126,7 +132,9 @@ const testPresets = {
     modes: ["no-context", "competitor-bundle", "target-only"],
     runType: "baseline",
     iterations: 1,
-    maxCandidates: 1
+    maxCandidates: 1,
+    maxIntents: 1,
+    candidatesPerIntent: 1
   },
   "cross-edit": {
     description: "Test 5 loaded: five prompts, OpenAI plus DeepSeek, one edit loop, two candidates.",
@@ -136,7 +144,9 @@ const testPresets = {
     modes: ["no-context", "competitor-bundle", "target-only"],
     runType: "recursive",
     iterations: 1,
-    maxCandidates: 2
+    maxCandidates: 4,
+    maxIntents: 2,
+    candidatesPerIntent: 2
   }
 };
 
@@ -202,7 +212,7 @@ document.querySelector("#testPreset").addEventListener("change", (event) => {
 
 document.addEventListener("input", (event) => {
   if (event.target.name === "provider") enforceProviderChoice(event.target);
-  if (["provider", "mode"].includes(event.target.name) || ["runType", "iterations", "maxCandidates"].includes(event.target.id)) {
+  if (["provider", "mode"].includes(event.target.name) || ["runType", "iterations", "maxCandidates", "maxIntents", "candidatesPerIntent"].includes(event.target.id)) {
     document.querySelector("#testPreset").value = "custom";
   }
   if (event.target.id === "sourceUrl" && importedSite && importedSite.sourceUrl !== value("#sourceUrl")) {
@@ -271,6 +281,8 @@ function applyTestPreset(name) {
   document.querySelector("#runType").value = preset.runType;
   document.querySelector("#iterations").value = String(preset.iterations);
   document.querySelector("#maxCandidates").value = String(preset.maxCandidates);
+  document.querySelector("#maxIntents").value = String(preset.maxIntents);
+  document.querySelector("#candidatesPerIntent").value = String(preset.candidatesPerIntent);
   if (preset.resetOptions) renderCompetitorRows([{ name: "", summary: "" }]);
   persistDraft();
   refreshPreview();
@@ -435,6 +447,8 @@ function buildPayload() {
   const evaluateCandidates = document.querySelector("#runType").value === "recursive";
   const iterations = numberValue("#iterations", 1);
   const maxCandidates = numberValue("#maxCandidates", 1);
+  const maxIntents = numberValue("#maxIntents", 1);
+  const candidatesPerIntent = numberValue("#candidatesPerIntent", 1);
 
   return {
     slug: entity,
@@ -486,7 +500,9 @@ function buildPayload() {
       modes,
       evaluateCandidates,
       iterations,
-      maxCandidates
+      maxCandidates,
+      maxIntents,
+      candidatesPerIntent
     }
   };
 }
@@ -582,6 +598,8 @@ function estimateRunCommand(payload) {
     `--providers=${providerArg}`,
     `--iterations=${payload.runOptions.iterations}`,
     `--max-candidates=${payload.runOptions.maxCandidates}`,
+    `--max-intents=${payload.runOptions.maxIntents}`,
+    `--candidates-per-intent=${payload.runOptions.candidatesPerIntent}`,
     payload.runOptions.evaluateCandidates ? "" : "--evaluate-candidates=false",
     payload.sourceUrl ? `--source-url='${payload.sourceUrl}'` : ""
   ].filter(Boolean);

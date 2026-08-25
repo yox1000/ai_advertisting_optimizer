@@ -47,6 +47,8 @@ The Run command box shows an unsaved preview until Save Setup is clicked. After 
 
 The Test preset dropdown can fill the prompt rows, provider settings, run settings, market default, default context, protected facts, and blocked-claim defaults for the staged tests: single-prompt debug, five-prompt set, FiDi Mezzanine multi-iteration, cross-model baseline, and cross-model edit. Test 3 is seeded with FiDi Mezzanine's public site details and clears stale discovered options so they can be regenerated for FiDi. Discovered options remain editable before saving.
 
+Candidate generation separates weak-intent selection from edit variants. `--max-intents` controls how many weak prompt intents are examined, `--candidates-per-intent` controls how many edit strategies are created for each intent, and `--max-candidates` is the hard cap for total candidate edit paths.
+
 `npm run optimize` creates:
 
 - `content-map.json`: extracted `data-ai-key` blocks from `index.html`.

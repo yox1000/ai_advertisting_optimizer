@@ -171,6 +171,8 @@ function buildRunCommand({ dir, payload }) {
     `--providers=${providers}`,
     `--iterations=${payload.runOptions.iterations}`,
     `--max-candidates=${payload.runOptions.maxCandidates}`,
+    `--max-intents=${payload.runOptions.maxIntents || payload.runOptions.maxCandidates || 1}`,
+    `--candidates-per-intent=${payload.runOptions.candidatesPerIntent || 1}`,
     payload.runOptions.evaluateCandidates ? "" : "--evaluate-candidates=false",
     payload.sourceUrl ? `--source-url=${shellArg(payload.sourceUrl)}` : ""
   ].filter(Boolean);
