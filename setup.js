@@ -11,6 +11,13 @@ const defaultPromptCount = 5;
 const storageKey = "ai-optimizer-setup-draft-v2";
 let importedSite = null;
 
+const venueDefaults = {
+  market: "NYC event venues",
+  defaultContext: "This company provides event venue services for weddings, corporate events, private parties, and special events in its market.",
+  protectedFacts: "address: replace with verified address\nphone: replace with verified phone\ncapacity: replace with verified capacity\nlocation: replace with verified city or neighborhood",
+  blockedClaims: "guaranteed best\nofficially ranked number one\ncheapest\nendorsed by every AI model\nbest in the world"
+};
+
 const venuePromptSet = [
   {
     intent: "wedding",
@@ -42,6 +49,7 @@ const venuePromptSet = [
 const testPresets = {
   "single-debug": {
     description: "Test 1 loaded: one prompt, DeepSeek, one edit loop, three candidates.",
+    defaults: venueDefaults,
     prompts: [venuePromptSet[0]],
     providers: ["deepseek"],
     modes: ["no-context", "competitor-bundle", "target-only"],
@@ -51,6 +59,7 @@ const testPresets = {
   },
   "prompt-set": {
     description: "Test 2 loaded: five prompts, DeepSeek, one edit loop, three candidates.",
+    defaults: venueDefaults,
     prompts: venuePromptSet,
     providers: ["deepseek"],
     modes: ["no-context", "competitor-bundle", "target-only"],
@@ -60,6 +69,7 @@ const testPresets = {
   },
   "multi-iteration": {
     description: "Test 3 loaded: five prompts, DeepSeek, three recursive iterations, two candidates.",
+    defaults: venueDefaults,
     prompts: venuePromptSet,
     providers: ["deepseek"],
     modes: ["no-context", "competitor-bundle", "target-only"],
@@ -69,6 +79,7 @@ const testPresets = {
   },
   "cross-baseline": {
     description: "Test 4 loaded: five prompts, OpenAI plus DeepSeek, baseline only.",
+    defaults: venueDefaults,
     prompts: venuePromptSet,
     providers: ["openai", "deepseek"],
     modes: ["no-context", "competitor-bundle", "target-only"],
@@ -78,6 +89,7 @@ const testPresets = {
   },
   "cross-edit": {
     description: "Test 5 loaded: five prompts, OpenAI plus DeepSeek, one edit loop, two candidates.",
+    defaults: venueDefaults,
     prompts: venuePromptSet,
     providers: ["openai", "deepseek"],
     modes: ["no-context", "competitor-bundle", "target-only"],
@@ -211,6 +223,7 @@ function applyTestPreset(name) {
     return;
   }
 
+  applyPresetDefaults(preset.defaults);
   renderPromptRows(preset.prompts);
   setCheckedValues("provider", preset.providers);
   setCheckedValues("mode", preset.modes);
@@ -220,6 +233,14 @@ function applyTestPreset(name) {
   persistDraft();
   refreshPreview();
   setStatus(preset.description, "ok");
+}
+
+function applyPresetDefaults(defaults) {
+  if (!defaults) return;
+  if (!value("#market")) setValue("#market", defaults.market);
+  if (!value("#defaultContext")) setValue("#defaultContext", defaults.defaultContext);
+  if (!value("#protectedFacts")) setValue("#protectedFacts", defaults.protectedFacts);
+  if (!value("#blockedClaims")) setValue("#blockedClaims", defaults.blockedClaims);
 }
 
 function addCompetitorRow(competitor) {
