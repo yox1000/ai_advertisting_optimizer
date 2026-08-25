@@ -10,6 +10,8 @@ const importStatus = document.querySelector("#importStatus");
 const defaultPromptCount = 5;
 const storageKey = "ai-optimizer-setup-draft-v2";
 let importedSite = null;
+let savedRunCommand = "";
+let lastSavedPayloadKey = "";
 
 const venueDefaults = {
   market: "NYC event venues",
@@ -392,6 +394,8 @@ async function saveSetup() {
 
     if (!response.ok) throw new Error(result.error || "Save failed.");
 
+    savedRunCommand = result.runCommand;
+    lastSavedPayloadKey = payloadKey(payload);
     commandPreview.value = result.runCommand;
     setStatus(`Saved.\n${result.dir}`, "ok");
   } catch (error) {
@@ -410,7 +414,7 @@ function refreshPreview() {
       competitors: payload.competitors,
       runOptions: payload.runOptions
     }, null, 2);
-    commandPreview.value = estimateRunCommand(payload);
+    commandPreview.value = commandTextForPayload(payload);
   } catch (error) {
     jsonPreview.value = "";
     commandPreview.value = "";
@@ -572,9 +576,9 @@ function estimateRunCommand(payload) {
   const parts = [
     "node optimizer/run.js",
     `--html=${shellPathArg(htmlPath)}`,
-    "--facts=optimizer/generated-setups/<saved-folder>/facts.json",
-    "--prompts=optimizer/generated-setups/<saved-folder>/prompt-suite.json",
-    "--competitors=optimizer/generated-setups/<saved-folder>/competitors.json",
+    "--facts=optimizer/generated-setups/<generated-after-save>/facts.json",
+    "--prompts=optimizer/generated-setups/<generated-after-save>/prompt-suite.json",
+    "--competitors=optimizer/generated-setups/<generated-after-save>/competitors.json",
     `--providers=${providerArg}`,
     `--iterations=${payload.runOptions.iterations}`,
     `--max-candidates=${payload.runOptions.maxCandidates}`,
@@ -583,6 +587,28 @@ function estimateRunCommand(payload) {
   ].filter(Boolean);
 
   return parts.join(" ");
+}
+
+function commandTextForPayload(payload) {
+  if (savedRunCommand && payloadKey(payload) === lastSavedPayloadKey) {
+    return savedRunCommand;
+  }
+  return [
+    "UNSAVED PREVIEW - click Save Setup to generate the final runnable command.",
+    "",
+    estimateRunCommand(payload)
+  ].join("\n");
+}
+
+function payloadKey(payload) {
+  return JSON.stringify({
+    htmlPath: payload.htmlPath,
+    sourceUrl: payload.sourceUrl,
+    facts: payload.facts,
+    prompts: payload.prompts,
+    competitors: payload.competitors,
+    runOptions: payload.runOptions
+  });
 }
 
 function persistDraft() {

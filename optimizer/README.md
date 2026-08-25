@@ -43,6 +43,8 @@ npm run optimize:real
 
 If a site was imported, `run-command.txt` uses that imported HTML path. If no import was run, it falls back to `index.html`.
 
+The Run command box shows an unsaved preview until Save Setup is clicked. After saving, it shows the final runnable command with the generated setup folder paths.
+
 The Test preset dropdown can fill the prompt rows, provider settings, run settings, market default, default context, protected facts, and blocked-claim defaults for the staged tests: single-prompt debug, five-prompt set, FiDi Mezzanine multi-iteration, cross-model baseline, and cross-model edit. Test 3 is seeded with FiDi Mezzanine's public site details and clears stale discovered options so they can be regenerated for FiDi. Discovered options remain editable before saving.
 
 `npm run optimize` creates:
