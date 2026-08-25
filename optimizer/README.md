@@ -33,13 +33,15 @@ npm run optimize:openai
 npm run optimize:real
 ```
 
-`npm run setup` starts a local setup page at `http://localhost:8090/setup.html`. Use it to enter a website URL, target company, prompts, factual guardrails, and run settings. The page starts with five prompt rows; remove extras for a focused test or add more for broader coverage. The Discovered Options section is for the other companies, venues, or products that models mention when answering those same prompts. Use the Discover button with OpenAI or DeepSeek selected, then manually remove bad options or add missing ones if needed. Saving from that page creates a timestamped folder under `optimizer/generated-setups/` with:
+`npm run setup` starts a local setup page at `http://localhost:8090/setup.html`. Use it to enter a website URL, target company, prompts, factual guardrails, and run settings. Click Import Site to fetch the URL and distill it into local editable HTML under `optimizer/imported-sites/`. The page starts with five prompt rows; remove extras for a focused test or add more for broader coverage. The Discovered Options section is for the other companies, venues, or products that models mention when answering those same prompts. Use the Discover button with OpenAI or DeepSeek selected, then manually remove bad options or add missing ones if needed. Saving from that page creates a timestamped folder under `optimizer/generated-setups/` with:
 
 - `facts.json`
 - `prompt-suite.json`
 - `competitors.json`
 - `setup.json`
 - `run-command.txt`
+
+If a site was imported, `run-command.txt` uses that imported HTML path. If no import was run, it falls back to `index.html`.
 
 `npm run optimize` creates:
 
@@ -51,7 +53,7 @@ npm run optimize:real
 
 The harness does not overwrite `index.html`. A human should inspect the accepted candidate before applying it to the live/static page.
 
-Generated setup folders are ignored by git.
+Generated setup and imported-site folders are ignored by git.
 
 ## Current Model Behavior
 

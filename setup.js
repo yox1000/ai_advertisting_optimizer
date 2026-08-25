@@ -5,9 +5,11 @@ const statusBox = document.querySelector("#status");
 const commandPreview = document.querySelector("#commandPreview");
 const jsonPreview = document.querySelector("#jsonPreview");
 const providerInputs = [...document.querySelectorAll("input[name='provider']")];
+const importStatus = document.querySelector("#importStatus");
 
 const defaultPromptCount = 5;
 const storageKey = "ai-optimizer-setup-draft-v2";
+let importedSite = null;
 
 const blankPrompt = (index) => ({
   intent: "",
@@ -66,6 +68,7 @@ const example = {
 renderPromptRows(Array.from({ length: defaultPromptCount }, (_, index) => blankPrompt(index)));
 renderCompetitorRows([{ name: "", summary: "" }, { name: "", summary: "" }]);
 restoreDraft();
+updateImportStatus();
 refreshPreview();
 
 document.querySelector("#loadExample").addEventListener("click", () => {
@@ -87,11 +90,16 @@ document.querySelector("#addPrompt").addEventListener("click", () => {
 });
 
 document.querySelector("#discoverOptions").addEventListener("click", discoverOptions);
+document.querySelector("#importSite").addEventListener("click", importCurrentSite);
 document.querySelector("#refreshPreview").addEventListener("click", refreshPreview);
 document.querySelector("#saveSetup").addEventListener("click", saveSetup);
 
 document.addEventListener("input", (event) => {
   if (event.target.name === "provider") enforceProviderChoice(event.target);
+  if (event.target.id === "sourceUrl" && importedSite && importedSite.sourceUrl !== value("#sourceUrl")) {
+    importedSite = null;
+    updateImportStatus();
+  }
   persistDraft();
   refreshPreview();
 });
@@ -189,6 +197,43 @@ async function discoverOptions() {
   }
 }
 
+async function importCurrentSite() {
+  try {
+    const sourceUrl = value("#sourceUrl");
+    const entity = value("#entity");
+    const market = value("#market");
+    if (!sourceUrl) throw new Error("Enter a website URL before importing.");
+
+    setStatus("Importing site content...", "");
+    updateImportStatus("Importing...");
+
+    const response = await fetch("/api/import-site", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sourceUrl, entity, market })
+    });
+    const result = await response.json();
+
+    if (!response.ok) throw new Error(result.error || "Import failed.");
+
+    importedSite = {
+      sourceUrl,
+      htmlPath: result.htmlPath,
+      reportPath: result.reportPath,
+      blockCount: result.blockCount,
+      editableBlockCount: result.editableBlockCount,
+      warnings: result.warnings || []
+    };
+    updateImportStatus();
+    persistDraft();
+    refreshPreview();
+    setStatus(`Imported ${result.editableBlockCount} editable blocks.\n${result.htmlPath}`, "ok");
+  } catch (error) {
+    setStatus(error.message, "warn");
+    updateImportStatus();
+  }
+}
+
 async function saveSetup() {
   try {
     const payload = buildPayload();
@@ -215,6 +260,8 @@ function refreshPreview() {
   try {
     const payload = buildPayload();
     jsonPreview.value = JSON.stringify({
+      htmlPath: payload.htmlPath,
+      import: payload.import,
       facts: payload.facts,
       prompts: payload.prompts,
       competitors: payload.competitors,
@@ -245,6 +292,8 @@ function buildPayload() {
   return {
     slug: entity,
     sourceUrl,
+    htmlPath: importedSite?.htmlPath || "index.html",
+    import: importedSite,
     facts: {
       entity,
       sourceUrl,
@@ -313,6 +362,8 @@ function fillForm(data) {
   setValue("#defaultContext", data.defaultContext);
   setValue("#protectedFacts", data.protectedFacts);
   setValue("#blockedClaims", data.blockedClaims);
+  importedSite = data.importedSite || data.import || null;
+  updateImportStatus();
   renderPromptRows(data.prompts);
   renderCompetitorRows(data.competitors);
   persistDraft();
@@ -366,9 +417,10 @@ function checkedValues(name) {
 
 function estimateRunCommand(payload) {
   const providerArg = payload.runOptions.providers.join(",");
+  const htmlPath = payload.htmlPath || "index.html";
   const parts = [
     "node optimizer/run.js",
-    "--html=index.html",
+    `--html=${shellPathArg(htmlPath)}`,
     "--facts=optimizer/generated-setups/<saved-folder>/facts.json",
     "--prompts=optimizer/generated-setups/<saved-folder>/prompt-suite.json",
     "--competitors=optimizer/generated-setups/<saved-folder>/competitors.json",
@@ -409,6 +461,7 @@ function readDraft() {
     defaultContext: value("#defaultContext"),
     protectedFacts: value("#protectedFacts"),
     blockedClaims: value("#blockedClaims"),
+    importedSite,
     prompts: readPrompts().map((prompt) => ({
       intent: prompt.intent,
       question: prompt.question,
@@ -462,6 +515,21 @@ function setStatus(message, tone) {
   statusBox.classList.toggle("warn", tone === "warn");
 }
 
+function updateImportStatus(message) {
+  if (message) {
+    importStatus.textContent = message;
+    importStatus.classList.remove("ready");
+    return;
+  }
+  if (!importedSite) {
+    importStatus.textContent = "No imported HTML yet. Saved commands will use local index.html.";
+    importStatus.classList.remove("ready");
+    return;
+  }
+  importStatus.textContent = `Using ${importedSite.htmlPath} (${importedSite.editableBlockCount} editable blocks)`;
+  importStatus.classList.add("ready");
+}
+
 function slugify(value) {
   return String(value || "")
     .toLowerCase()
@@ -479,4 +547,9 @@ function escapeHtml(value) {
 
 function escapeAttr(value) {
   return escapeHtml(value).replace(/"/g, "&quot;");
+}
+
+function shellPathArg(value) {
+  const text = String(value);
+  return /[\s'"]/g.test(text) ? `'${text.replace(/'/g, "'\\''")}'` : text;
 }

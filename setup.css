@@ -133,6 +133,22 @@ h2 {
   gap: 8px;
 }
 
+.inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -4px 0 14px;
+}
+
+.import-status {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.import-status.ready {
+  color: var(--ok);
+}
+
 .field-note {
   margin: -4px 0 14px;
   color: var(--muted);

@@ -3,10 +3,12 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { extname, join, resolve } from "node:path";
 import { discoverOptionsFromPrompts } from "./lib/discovery.js";
 import { loadDotEnv } from "./lib/env.js";
+import { importSite } from "./lib/site-importer.js";
 
 const port = Number(process.env.PORT || 8090);
 const root = resolve(".");
-const outputRoot = join(root, "optimizer", "generated-setups");
+const setupOutputRoot = join(root, "optimizer", "generated-setups");
+const importOutputRoot = join(root, "optimizer", "imported-sites");
 
 loadDotEnv();
 
@@ -26,6 +28,11 @@ const server = createServer(async (req, res) => {
 
     if (req.method === "POST" && req.url === "/api/discover-options") {
       await handleDiscoverOptions(req, res);
+      return;
+    }
+
+    if (req.method === "POST" && req.url === "/api/import-site") {
+      await handleImportSite(req, res);
       return;
     }
 
@@ -62,7 +69,7 @@ async function handleSaveSetup(req, res) {
 
   const slug = slugify(payload.slug || payload.facts.entity || "setup");
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const dir = join(outputRoot, `${slug}-${timestamp}`);
+  const dir = join(setupOutputRoot, `${slug}-${timestamp}`);
 
   await mkdir(dir, { recursive: true });
   await writeJson(join(dir, "facts.json"), payload.facts);
@@ -70,6 +77,8 @@ async function handleSaveSetup(req, res) {
   await writeJson(join(dir, "competitors.json"), payload.competitors);
   await writeJson(join(dir, "setup.json"), {
     sourceUrl: payload.sourceUrl,
+    htmlPath: payload.htmlPath || "index.html",
+    import: payload.import || null,
     runOptions: payload.runOptions,
     createdAt: new Date().toISOString()
   });
@@ -83,6 +92,25 @@ async function handleSaveSetup(req, res) {
     files: ["facts.json", "prompt-suite.json", "competitors.json", "setup.json", "run-command.txt"],
     runCommand
   });
+}
+
+async function handleImportSite(req, res) {
+  const body = await readBody(req);
+  const payload = JSON.parse(body || "{}");
+  if (!payload.sourceUrl) {
+    sendJson(res, 400, { error: "Website URL is required." });
+    return;
+  }
+
+  const result = await importSite({
+    sourceUrl: payload.sourceUrl,
+    entity: payload.entity,
+    market: payload.market,
+    outputRoot: importOutputRoot
+  });
+
+  console.log(`[import] ${payload.sourceUrl} -> ${result.htmlPath} (${result.editableBlockCount} editable blocks)`);
+  sendJson(res, 200, { ok: true, ...result });
 }
 
 async function handleDiscoverOptions(req, res) {
@@ -133,9 +161,10 @@ async function serveStatic(req, res) {
 
 function buildRunCommand({ dir, payload }) {
   const providers = payload.runOptions.providers.length ? payload.runOptions.providers.join(",") : "local";
+  const htmlPath = payload.htmlPath || "index.html";
   const args = [
     "node optimizer/run.js",
-    "--html=index.html",
+    `--html=${shellPathArg(htmlPath)}`,
     `--facts=${relativePath(dir, "facts.json")}`,
     `--prompts=${relativePath(dir, "prompt-suite.json")}`,
     `--competitors=${relativePath(dir, "competitors.json")}`,
@@ -200,4 +229,9 @@ function slugify(value) {
 
 function shellArg(value) {
   return `'${String(value).replace(/'/g, "'\\''")}'`;
+}
+
+function shellPathArg(value) {
+  const text = String(value);
+  return /[\s'"]/g.test(text) ? shellArg(text) : text;
 }
