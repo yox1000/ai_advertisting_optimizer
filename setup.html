@@ -94,6 +94,17 @@
             <div class="section-head">
               <h2>Run</h2>
             </div>
+            <label>
+              Test preset
+              <select id="testPreset">
+                <option value="custom">Custom</option>
+                <option value="single-debug">Test 1: single-prompt debug</option>
+                <option value="prompt-set">Test 2: five-prompt set</option>
+                <option value="multi-iteration">Test 3: multi-iteration</option>
+                <option value="cross-baseline">Test 4: cross-model baseline</option>
+                <option value="cross-edit">Test 5: cross-model edit</option>
+              </select>
+            </label>
             <fieldset>
               <legend>Providers</legend>
               <label class="check-row"><input type="checkbox" name="provider" value="local" checked> Local simulator</label>

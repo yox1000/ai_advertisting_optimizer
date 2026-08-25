@@ -11,6 +11,82 @@ const defaultPromptCount = 5;
 const storageKey = "ai-optimizer-setup-draft-v2";
 let importedSite = null;
 
+const venuePromptSet = [
+  {
+    intent: "wedding",
+    question: "What are the best rooftop wedding venues in NYC for about 100 guests?",
+    requiredSignals: "rooftop, wedding, 100 guests, nyc, view"
+  },
+  {
+    intent: "corporate",
+    question: "Recommend corporate event spaces near Fifth Avenue in Manhattan with AV support.",
+    requiredSignals: "corporate, fifth avenue, manhattan, av, event space"
+  },
+  {
+    intent: "hybrid",
+    question: "Which Manhattan venues offer both an indoor loft and rooftop space for a private event?",
+    requiredSignals: "indoor, loft, rooftop, manhattan, private event"
+  },
+  {
+    intent: "social",
+    question: "What NYC venue works for a Sweet Sixteen with lighting, screens, and party production?",
+    requiredSignals: "sweet sixteen, nyc, lighting, screens, production"
+  },
+  {
+    intent: "location",
+    question: "What event venue near the Empire State Building has skyline views?",
+    requiredSignals: "empire state building, skyline, near, event venue"
+  }
+];
+
+const testPresets = {
+  "single-debug": {
+    description: "Test 1 loaded: one prompt, DeepSeek, one edit loop, three candidates.",
+    prompts: [venuePromptSet[0]],
+    providers: ["deepseek"],
+    modes: ["no-context", "competitor-bundle", "target-only"],
+    runType: "recursive",
+    iterations: 1,
+    maxCandidates: 3
+  },
+  "prompt-set": {
+    description: "Test 2 loaded: five prompts, DeepSeek, one edit loop, three candidates.",
+    prompts: venuePromptSet,
+    providers: ["deepseek"],
+    modes: ["no-context", "competitor-bundle", "target-only"],
+    runType: "recursive",
+    iterations: 1,
+    maxCandidates: 3
+  },
+  "multi-iteration": {
+    description: "Test 3 loaded: five prompts, DeepSeek, three recursive iterations, two candidates.",
+    prompts: venuePromptSet,
+    providers: ["deepseek"],
+    modes: ["no-context", "competitor-bundle", "target-only"],
+    runType: "recursive",
+    iterations: 3,
+    maxCandidates: 2
+  },
+  "cross-baseline": {
+    description: "Test 4 loaded: five prompts, OpenAI plus DeepSeek, baseline only.",
+    prompts: venuePromptSet,
+    providers: ["openai", "deepseek"],
+    modes: ["no-context", "competitor-bundle", "target-only"],
+    runType: "baseline",
+    iterations: 1,
+    maxCandidates: 1
+  },
+  "cross-edit": {
+    description: "Test 5 loaded: five prompts, OpenAI plus DeepSeek, one edit loop, two candidates.",
+    prompts: venuePromptSet,
+    providers: ["openai", "deepseek"],
+    modes: ["no-context", "competitor-bundle", "target-only"],
+    runType: "recursive",
+    iterations: 1,
+    maxCandidates: 2
+  }
+};
+
 const blankPrompt = (index) => ({
   intent: "",
   question: "",
@@ -26,33 +102,7 @@ const example = {
   defaultContext: "Midtown Loft & Terrace is a Midtown Manhattan event venue with indoor loft, rooftop terrace, and studio spaces near Fifth Avenue.",
   protectedFacts: "address: 267 Fifth Ave. Suite 100, New York, NY 10016 USA\nphone: (212) 537-0117\nloftSize: 5,000 sq ft\nterraceSize: 4,400 sq ft",
   blockedClaims: "guaranteed best venue in NYC\nofficially ranked number one\ncheapest venue\nendorsed by every AI model",
-  prompts: [
-    {
-      intent: "wedding",
-      question: "What are the best rooftop wedding venues in NYC for about 100 guests?",
-      requiredSignals: "rooftop, wedding, 100 guests, nyc, view"
-    },
-    {
-      intent: "corporate",
-      question: "Recommend corporate event spaces near Fifth Avenue in Manhattan with AV support.",
-      requiredSignals: "corporate, fifth avenue, manhattan, av, event space"
-    },
-    {
-      intent: "hybrid",
-      question: "Which Manhattan venues offer both an indoor loft and rooftop space for a private event?",
-      requiredSignals: "indoor, loft, rooftop, manhattan, private event"
-    },
-    {
-      intent: "social",
-      question: "What NYC venue works for a Sweet Sixteen with lighting, screens, and party production?",
-      requiredSignals: "sweet sixteen, nyc, lighting, screens, production"
-    },
-    {
-      intent: "location",
-      question: "What event venue near the Empire State Building has skyline views?",
-      requiredSignals: "empire state building, skyline, near, event venue"
-    }
-  ],
+  prompts: venuePromptSet,
   competitors: [
     {
       name: "Venue A",
@@ -93,9 +143,15 @@ document.querySelector("#discoverOptions").addEventListener("click", discoverOpt
 document.querySelector("#importSite").addEventListener("click", importCurrentSite);
 document.querySelector("#refreshPreview").addEventListener("click", refreshPreview);
 document.querySelector("#saveSetup").addEventListener("click", saveSetup);
+document.querySelector("#testPreset").addEventListener("change", (event) => {
+  applyTestPreset(event.target.value);
+});
 
 document.addEventListener("input", (event) => {
   if (event.target.name === "provider") enforceProviderChoice(event.target);
+  if (["provider", "mode"].includes(event.target.name) || ["runType", "iterations", "maxCandidates"].includes(event.target.id)) {
+    document.querySelector("#testPreset").value = "custom";
+  }
   if (event.target.id === "sourceUrl" && importedSite && importedSite.sourceUrl !== value("#sourceUrl")) {
     importedSite = null;
     updateImportStatus();
@@ -145,6 +201,25 @@ function addPromptRow(prompt) {
 function renderCompetitorRows(competitors) {
   competitorList.innerHTML = "";
   competitors.forEach(addCompetitorRow);
+}
+
+function applyTestPreset(name) {
+  const preset = testPresets[name];
+  if (!preset) {
+    persistDraft();
+    refreshPreview();
+    return;
+  }
+
+  renderPromptRows(preset.prompts);
+  setCheckedValues("provider", preset.providers);
+  setCheckedValues("mode", preset.modes);
+  document.querySelector("#runType").value = preset.runType;
+  document.querySelector("#iterations").value = String(preset.iterations);
+  document.querySelector("#maxCandidates").value = String(preset.maxCandidates);
+  persistDraft();
+  refreshPreview();
+  setStatus(preset.description, "ok");
 }
 
 function addCompetitorRow(competitor) {
@@ -362,6 +437,7 @@ function fillForm(data) {
   setValue("#defaultContext", data.defaultContext);
   setValue("#protectedFacts", data.protectedFacts);
   setValue("#blockedClaims", data.blockedClaims);
+  document.querySelector("#testPreset").value = data.testPreset || "custom";
   importedSite = data.importedSite || data.import || null;
   updateImportStatus();
   renderPromptRows(data.prompts);
@@ -415,6 +491,13 @@ function checkedValues(name) {
   return [...document.querySelectorAll(`input[name='${name}']:checked`)].map((input) => input.value);
 }
 
+function setCheckedValues(name, values) {
+  const selected = new Set(values);
+  document.querySelectorAll(`input[name='${name}']`).forEach((input) => {
+    input.checked = selected.has(input.value);
+  });
+}
+
 function estimateRunCommand(payload) {
   const providerArg = payload.runOptions.providers.join(",");
   const htmlPath = payload.htmlPath || "index.html";
@@ -462,6 +545,7 @@ function readDraft() {
     protectedFacts: value("#protectedFacts"),
     blockedClaims: value("#blockedClaims"),
     importedSite,
+    testPreset: document.querySelector("#testPreset").value,
     prompts: readPrompts().map((prompt) => ({
       intent: prompt.intent,
       question: prompt.question,

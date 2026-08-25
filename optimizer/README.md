@@ -43,6 +43,8 @@ npm run optimize:real
 
 If a site was imported, `run-command.txt` uses that imported HTML path. If no import was run, it falls back to `index.html`.
 
+The Test preset dropdown can fill the prompt rows and run settings for the staged tests: single-prompt debug, five-prompt set, multi-iteration, cross-model baseline, and cross-model edit. Presets do not replace the imported site or discovered options; those remain editable before saving.
+
 `npm run optimize` creates:
 
 - `content-map.json`: extracted `data-ai-key` blocks from `index.html`.
