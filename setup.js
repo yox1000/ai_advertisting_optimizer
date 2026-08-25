@@ -49,38 +49,38 @@ const venuePromptSet = [
 const fidiDefaults = {
   sourceUrl: "https://www.fidimezzanine.com/",
   entity: "FiDi Mezzanine",
-  aliases: "FiDi Mezzanine, Fidi Mezzanine, 55 Broadway event venue",
+  aliases: "FiDi Mezzanine, FIDI MEZZANINE NYC, 55 Broadway event venue, MMEink",
   market: "NYC event venues",
-  defaultContext: "FiDi Mezzanine is a Manhattan Financial District event venue at 55 Broadway with flexible rooms for corporate events, weddings, private parties, and milestone celebrations.",
-  protectedFacts: "address: 55 Broadway, New York, NY\nsize: 6,300 square feet\nrooms: four rooms\ncapacity: up to 400 guests\nlocation: Financial District, Manhattan",
+  defaultContext: "FiDi Mezzanine is a full-service Manhattan event venue at 55 Broadway in the Financial District, with over 6,300 square feet for corporate events, weddings, private parties, milestone celebrations, cocktail receptions, and film or TV shoots.",
+  protectedFacts: "address: 55 Broadway, New York, NY 10006\nphone: 212-971-5353\nemail: info@mmeink.com\nsize: over 6,300 square feet\ncapacity: up to 400 guests\nlocation: Financial District, Manhattan\nnearby: Wall Street\nrooms: Main Bar, Lobby, Reading Room, Conference Room, Dining Room, Meeting Room\nservices: catering, decor, staging, production, entertainment",
   blockedClaims: "guaranteed best venue in NYC\nofficially ranked number one\ncheapest venue\nendorsed by every AI model\nbest in the world"
 };
 
 const fidiPromptSet = [
   {
     intent: "corporate",
-    question: "What are the best corporate event venues in Manhattan's Financial District for conferences or product launches?",
-    requiredSignals: "corporate, financial district, manhattan, conference, product launch"
+    question: "What are the best full-service corporate event venues in Manhattan's Financial District for conferences, product launches, or company parties?",
+    requiredSignals: "corporate, financial district, manhattan, conference, product launch, company party, full-service"
   },
   {
     intent: "wedding",
-    question: "Which Manhattan venues work well for a wedding reception with flexible indoor event space?",
-    requiredSignals: "wedding reception, manhattan, flexible, indoor, event space"
+    question: "Which Manhattan venues work well for a full-service wedding ceremony and reception in a flexible indoor event space?",
+    requiredSignals: "wedding, ceremony, reception, manhattan, flexible, indoor, full-service"
   },
   {
     intent: "large-private-event",
-    question: "Recommend NYC private event venues that can host up to about 400 guests.",
-    requiredSignals: "nyc, private event, 400 guests, capacity, venue"
+    question: "Recommend NYC private event venues for milestone celebrations, cocktail receptions, or dinners for up to about 400 guests.",
+    requiredSignals: "nyc, private event, milestone celebration, cocktail reception, dinner, 400 guests"
   },
   {
     intent: "downtown-location",
-    question: "What event venues near Wall Street or 55 Broadway are good for milestone dinners and cocktail receptions?",
-    requiredSignals: "wall street, 55 broadway, milestone dinner, cocktail reception, financial district"
+    question: "What event venues near Wall Street or 55 Broadway are good for private parties and corporate receptions?",
+    requiredSignals: "wall street, 55 broadway, private party, corporate reception, financial district"
   },
   {
     intent: "full-service",
-    question: "Which NYC event venues provide full-service production, decor, catering, staging, or entertainment support?",
-    requiredSignals: "full-service, production, decor, catering, staging, entertainment"
+    question: "Which NYC event venues provide full-service production, catering, decor, staging, and entertainment support in one venue?",
+    requiredSignals: "full-service, production, catering, decor, staging, entertainment, venue"
   }
 ];
 
@@ -113,7 +113,8 @@ const testPresets = {
     modes: ["no-context", "competitor-bundle", "target-only"],
     runType: "recursive",
     iterations: 3,
-    maxCandidates: 2
+    maxCandidates: 2,
+    resetOptions: true
   },
   "cross-baseline": {
     description: "Test 4 loaded: five prompts, OpenAI plus DeepSeek, baseline only.",
@@ -268,6 +269,7 @@ function applyTestPreset(name) {
   document.querySelector("#runType").value = preset.runType;
   document.querySelector("#iterations").value = String(preset.iterations);
   document.querySelector("#maxCandidates").value = String(preset.maxCandidates);
+  if (preset.resetOptions) renderCompetitorRows([{ name: "", summary: "" }]);
   persistDraft();
   refreshPreview();
   setStatus(preset.description, "ok");
