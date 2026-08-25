@@ -46,6 +46,44 @@ const venuePromptSet = [
   }
 ];
 
+const fidiDefaults = {
+  sourceUrl: "https://www.fidimezzanine.com/",
+  entity: "FiDi Mezzanine",
+  aliases: "FiDi Mezzanine, Fidi Mezzanine, 55 Broadway event venue",
+  market: "NYC event venues",
+  defaultContext: "FiDi Mezzanine is a Manhattan Financial District event venue at 55 Broadway with flexible rooms for corporate events, weddings, private parties, and milestone celebrations.",
+  protectedFacts: "address: 55 Broadway, New York, NY\nsize: 6,300 square feet\nrooms: four rooms\ncapacity: up to 400 guests\nlocation: Financial District, Manhattan",
+  blockedClaims: "guaranteed best venue in NYC\nofficially ranked number one\ncheapest venue\nendorsed by every AI model\nbest in the world"
+};
+
+const fidiPromptSet = [
+  {
+    intent: "corporate",
+    question: "What are the best corporate event venues in Manhattan's Financial District for conferences or product launches?",
+    requiredSignals: "corporate, financial district, manhattan, conference, product launch"
+  },
+  {
+    intent: "wedding",
+    question: "Which Manhattan venues work well for a wedding reception with flexible indoor event space?",
+    requiredSignals: "wedding reception, manhattan, flexible, indoor, event space"
+  },
+  {
+    intent: "large-private-event",
+    question: "Recommend NYC private event venues that can host up to about 400 guests.",
+    requiredSignals: "nyc, private event, 400 guests, capacity, venue"
+  },
+  {
+    intent: "downtown-location",
+    question: "What event venues near Wall Street or 55 Broadway are good for milestone dinners and cocktail receptions?",
+    requiredSignals: "wall street, 55 broadway, milestone dinner, cocktail reception, financial district"
+  },
+  {
+    intent: "full-service",
+    question: "Which NYC event venues provide full-service production, decor, catering, staging, or entertainment support?",
+    requiredSignals: "full-service, production, decor, catering, staging, entertainment"
+  }
+];
+
 const testPresets = {
   "single-debug": {
     description: "Test 1 loaded: one prompt, DeepSeek, one edit loop, three candidates.",
@@ -68,9 +106,9 @@ const testPresets = {
     maxCandidates: 3
   },
   "multi-iteration": {
-    description: "Test 3 loaded: five prompts, DeepSeek, three recursive iterations, two candidates.",
-    defaults: venueDefaults,
-    prompts: venuePromptSet,
+    description: "Test 3 loaded for FiDi Mezzanine: five prompts, DeepSeek, three recursive iterations, two candidates.",
+    defaults: fidiDefaults,
+    prompts: fidiPromptSet,
     providers: ["deepseek"],
     modes: ["no-context", "competitor-bundle", "target-only"],
     runType: "recursive",
@@ -237,10 +275,17 @@ function applyTestPreset(name) {
 
 function applyPresetDefaults(defaults) {
   if (!defaults) return;
-  if (!value("#market")) setValue("#market", defaults.market);
-  if (!value("#defaultContext")) setValue("#defaultContext", defaults.defaultContext);
-  if (!value("#protectedFacts")) setValue("#protectedFacts", defaults.protectedFacts);
-  if (!value("#blockedClaims")) setValue("#blockedClaims", defaults.blockedClaims);
+  if (defaults.sourceUrl) {
+    setValue("#sourceUrl", defaults.sourceUrl);
+    importedSite = null;
+    updateImportStatus();
+  }
+  if (defaults.entity) setValue("#entity", defaults.entity);
+  if (defaults.aliases) setValue("#aliases", defaults.aliases);
+  if (defaults.market) setValue("#market", defaults.market);
+  if (defaults.defaultContext) setValue("#defaultContext", defaults.defaultContext);
+  if (defaults.protectedFacts) setValue("#protectedFacts", defaults.protectedFacts);
+  if (defaults.blockedClaims) setValue("#blockedClaims", defaults.blockedClaims);
 }
 
 function addCompetitorRow(competitor) {
